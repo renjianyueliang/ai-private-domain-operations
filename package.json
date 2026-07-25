@@ -1,0 +1,29 @@
+{
+  "name": "trading-private-domain-ai-commander",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^1.27.0",
+    "next": "latest",
+    "pg": "^8.22.0",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "overrides": {
+    "postcss": "8.5.18",
+    "sharp": "0.35.0"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/pg": "^8.20.0",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "5.9.3"
+  }
+}
