@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { canAccessTenant, canWriteTenantData, DemoUser } from "./auth";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
+import { saveObject } from "./object-storage";
+import { enqueueWorkerJob } from "./queue-driver";
 import { findTenantById } from "./saas";
 
 export type UploadKind = "knowledge" | "video";
@@ -378,11 +380,7 @@ export async function saveUpload(
   const safeOriginal = sanitizeName(file.name);
   const storedName = `${id}-${safeOriginal}`;
   const relativePath = path.join("uploads", tenantId, kind, storedName);
-  const absolutePath = path.join(localDataRoot(), relativePath);
-
-  await mkdir(path.dirname(absolutePath), { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(absolutePath, buffer);
+  const storedObject = await saveObject(relativePath, file);
 
   const upload: StoredUpload = {
     id,
@@ -390,7 +388,7 @@ export async function saveUpload(
     kind,
     originalName: file.name,
     storedName,
-    relativePath,
+    relativePath: storedObject.relativePath,
     mimeType: file.type || "application/octet-stream",
     size: file.size,
     status: "queued",
@@ -454,6 +452,13 @@ export async function createJob(
     targetId: job.id,
     createdAt: now,
   });
+
+  const queueResult = await enqueueWorkerJob({ tenantId, jobId: job.id });
+  if (queueResult.enqueued) {
+    await updateJob(tenantId, job.id, {
+      logs: [...job.logs, `已进入 BullMQ 队列：${queueResult.jobId}`],
+    });
+  }
 
   return job;
 }

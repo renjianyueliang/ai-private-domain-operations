@@ -41,11 +41,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ user, draft }, { status: 201 });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create tenant draft.";
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to create tenant draft.",
+        error: message,
       },
-      { status: 403 },
+      { status: message.includes("平台管理员") ? 403 : 400 },
     );
   }
 }

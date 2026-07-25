@@ -4320,3 +4320,289 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+/* Login and production readiness. */
+.topbar-logout {
+  border: 1px solid rgba(229, 72, 77, 0.16);
+  color: #8f231f;
+}
+
+.login-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+}
+
+.login-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.75fr);
+  gap: 22px;
+  width: min(1060px, 100%);
+  padding: 26px;
+  border: 1px solid rgba(23, 56, 46, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 24px 80px rgba(27, 76, 59, 0.14);
+}
+
+.login-copy {
+  display: grid;
+  align-content: center;
+  padding: 18px;
+}
+
+.login-copy h1 {
+  margin: 0 0 12px;
+  color: #17382e;
+  font-size: clamp(36px, 5vw, 58px);
+  line-height: 1.04;
+}
+
+.login-copy p {
+  max-width: 620px;
+  margin: 0;
+  color: #668078;
+  line-height: 1.75;
+}
+
+.login-security-note,
+.login-message,
+.production-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 12px;
+  color: #49645a;
+  border-radius: 12px;
+  background: #f3f8f5;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.login-form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(23, 56, 46, 0.1);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.login-form-heading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.login-form-heading div,
+.login-account-preview {
+  display: grid;
+  gap: 4px;
+}
+
+.login-form-heading strong,
+.login-account-preview strong {
+  color: #17382e;
+}
+
+.login-form-heading span,
+.login-account-preview span,
+.login-account-preview small {
+  color: #71837d;
+  font-size: 11px;
+}
+
+.login-form label,
+.billing-form label {
+  display: grid;
+  gap: 7px;
+  color: #49645a;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.login-form input,
+.login-form select,
+.billing-form input,
+.billing-form select {
+  min-height: 42px;
+  padding: 0 11px;
+  color: #17382e;
+  border: 1px solid rgba(23, 56, 46, 0.14);
+  border-radius: 10px;
+  background: #fbfdfc;
+  font: inherit;
+}
+
+.login-form button,
+.billing-form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  color: #ffffff;
+  border: 0;
+  border-radius: 11px;
+  background: #0d8f55;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.production-panel {
+  display: grid;
+  gap: 15px;
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid rgba(23, 56, 46, 0.09);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), #f5f8f6);
+  box-shadow: 0 15px 45px rgba(20, 55, 44, 0.055);
+}
+
+.production-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.production-health-grid article {
+  display: flex;
+  gap: 11px;
+  min-height: 106px;
+  padding: 14px;
+  border: 1px solid rgba(23, 56, 46, 0.09);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.production-health-grid article.ready svg { color: #087443; }
+.production-health-grid article.review svg { color: #b45309; }
+
+.production-health-grid article div {
+  display: grid;
+  gap: 3px;
+}
+
+.production-health-grid span,
+.production-health-grid small {
+  color: #71837d;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.production-health-grid strong {
+  color: #17382e;
+  font-size: 15px;
+}
+
+.production-two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+  gap: 13px;
+}
+
+.production-card {
+  padding: 16px;
+  border: 1px solid rgba(23, 56, 46, 0.09);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.connector-grid {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.connector-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  padding: 11px;
+  border-radius: 12px;
+  background: #f7faf8;
+}
+
+.connector-row strong,
+.connector-row span,
+.connector-row small {
+  display: block;
+}
+
+.connector-row span,
+.connector-row small {
+  margin-top: 4px;
+  color: #71837d;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.connector-row em {
+  width: max-content;
+  height: max-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.connector-row.ready em { color: #087443; background: #eaf8f0; }
+.connector-row.needs_credentials em { color: #985c05; background: #fff5df; }
+.connector-row.manual_only em { color: #315fc8; background: #edf2ff; }
+.connector-row.not_supported em { color: #b42318; background: #fff1f2; }
+
+.connector-row small {
+  grid-column: 1 / -1;
+}
+
+.billing-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  margin-top: 12px;
+}
+
+.billing-form .full-field,
+.billing-form button,
+.production-note {
+  grid-column: 1 / -1;
+}
+
+.production-note {
+  flex-wrap: wrap;
+}
+
+.production-note span {
+  width: 100%;
+  margin-left: 25px;
+  color: #087443;
+  font-weight: 850;
+}
+
+@media (max-width: 980px) {
+  .login-panel,
+  .production-two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .production-health-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .login-shell {
+    padding: 14px;
+  }
+
+  .login-panel,
+  .production-health-grid,
+  .billing-form {
+    grid-template-columns: 1fr;
+  }
+}

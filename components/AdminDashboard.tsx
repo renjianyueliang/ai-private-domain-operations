@@ -20,6 +20,7 @@ import {
 } from "../lib/operations";
 import { AdminControlCenter } from "./AdminControlCenter";
 import { ModelControlCenter } from "./ModelControlCenter";
+import { ProductionStatusPanel } from "./ProductionStatusPanel";
 
 const channelStatusLabels: Record<SaasTenant["channels"][number]["status"], string> = {
   connected: "已连接",
@@ -81,6 +82,7 @@ export function AdminDashboard() {
     <main className="dashboard-shell admin-shell">
       <AdminControlCenter metrics={metrics} />
       <ModelControlCenter />
+      <ProductionStatusPanel />
 
       <section id="admin-plans" className="admin-section" aria-label="客户开通流程">
         <div className="section-heading-row">

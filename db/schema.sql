@@ -1,31 +1,95 @@
--- AI 私域 SaaS 指挥官 PostgreSQL 表结构草案
+﻿-- AI 私域 SaaS 指挥官 PostgreSQL 表结构草案
 -- 目标：多租户、登录权限、知识库、视频资产、任务队列、发布任务、私域会话、审计日志。
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-CREATE TYPE tenant_status AS ENUM ('trial', 'active', 'paused');
-CREATE TYPE user_role AS ENUM ('platform_admin', 'tenant_admin', 'operator', 'viewer');
-CREATE TYPE upload_kind AS ENUM ('knowledge', 'video');
-CREATE TYPE upload_status AS ENUM ('uploaded', 'queued', 'processed', 'blocked');
-CREATE TYPE job_status AS ENUM ('queued', 'running', 'needs_review', 'done', 'failed');
-CREATE TYPE job_kind AS ENUM (
-  'knowledge_ingest',
-  'video_transcode',
-  'subtitle_generation',
-  'compliance_review',
-  'publish_video',
-  'sync_comments',
-  'private_domain_reply'
-);
-CREATE TYPE publish_mode AS ENUM ('official_api', 'semi_auto', 'asset_pack', 'manual');
-CREATE TYPE conversation_intent AS ENUM ('low', 'medium', 'high', 'human_required');
-CREATE TYPE subscription_status AS ENUM ('trial', 'active', 'expired', 'paused', 'cancelled');
-CREATE TYPE autopilot_mode AS ENUM ('assist', 'review', 'guarded', 'managed');
-CREATE TYPE exception_status AS ENUM ('open', 'acknowledged', 'resolved', 'dismissed');
-CREATE TYPE opportunity_stage AS ENUM ('new', 'qualified', 'proposal', 'won', 'lost');
-CREATE TYPE order_status AS ENUM ('pending', 'paid', 'delivered', 'refunded', 'cancelled');
+DO $$
+BEGIN
+  CREATE TYPE tenant_status AS ENUM ('trial', 'active', 'paused');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE plans (
+DO $$
+BEGIN
+  CREATE TYPE user_role AS ENUM ('platform_admin', 'tenant_admin', 'operator', 'viewer');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE upload_kind AS ENUM ('knowledge', 'video');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE upload_status AS ENUM ('uploaded', 'queued', 'processed', 'blocked');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE job_status AS ENUM ('queued', 'running', 'needs_review', 'done', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE job_kind AS ENUM (
+    'knowledge_ingest',
+    'video_transcode',
+    'subtitle_generation',
+    'compliance_review',
+    'publish_video',
+    'sync_comments',
+    'private_domain_reply'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE publish_mode AS ENUM ('official_api', 'semi_auto', 'asset_pack', 'manual');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE conversation_intent AS ENUM ('low', 'medium', 'high', 'human_required');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE subscription_status AS ENUM ('trial', 'active', 'expired', 'paused', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE autopilot_mode AS ENUM ('assist', 'review', 'guarded', 'managed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE exception_status AS ENUM ('open', 'acknowledged', 'resolved', 'dismissed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE opportunity_stage AS ENUM ('new', 'qualified', 'proposal', 'won', 'lost');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  CREATE TYPE order_status AS ENUM ('pending', 'paid', 'delivered', 'refunded', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS plans (
   code text PRIMARY KEY,
   name text NOT NULL,
   annual_price_cny numeric NOT NULL DEFAULT 0,
@@ -42,7 +106,7 @@ CREATE TABLE plans (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE plan_features (
+CREATE TABLE IF NOT EXISTS plan_features (
   plan_code text NOT NULL REFERENCES plans(code) ON DELETE CASCADE,
   feature_key text NOT NULL,
   feature_label text NOT NULL,
@@ -51,7 +115,7 @@ CREATE TABLE plan_features (
   PRIMARY KEY (plan_code, feature_key)
 );
 
-CREATE TABLE tenants (
+CREATE TABLE IF NOT EXISTS tenants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug text NOT NULL UNIQUE,
   name text NOT NULL,
@@ -65,7 +129,7 @@ CREATE TABLE tenants (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email text NOT NULL UNIQUE,
   name text NOT NULL,
@@ -74,7 +138,7 @@ CREATE TABLE users (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE user_tenant_roles (
+CREATE TABLE IF NOT EXISTS user_tenant_roles (
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   role user_role NOT NULL,
@@ -82,7 +146,7 @@ CREATE TABLE user_tenant_roles (
   PRIMARY KEY (user_id, tenant_id)
 );
 
-CREATE TABLE industry_templates (
+CREATE TABLE IF NOT EXISTS industry_templates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   code text NOT NULL UNIQUE,
   name text NOT NULL,
@@ -95,11 +159,15 @@ CREATE TABLE industry_templates (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE tenants
-  ADD CONSTRAINT tenants_industry_template_fk
-  FOREIGN KEY (industry_template_id) REFERENCES industry_templates(id);
+DO $$
+BEGIN
+  ALTER TABLE tenants
+    ADD CONSTRAINT tenants_industry_template_fk
+    FOREIGN KEY (industry_template_id) REFERENCES industry_templates(id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE knowledge_documents (
+CREATE TABLE IF NOT EXISTS knowledge_documents (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   uploaded_by uuid REFERENCES users(id),
@@ -114,7 +182,7 @@ CREATE TABLE knowledge_documents (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE video_assets (
+CREATE TABLE IF NOT EXISTS video_assets (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   uploaded_by uuid REFERENCES users(id),
@@ -129,7 +197,7 @@ CREATE TABLE video_assets (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE jobs (
+CREATE TABLE IF NOT EXISTS jobs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   created_by uuid REFERENCES users(id),
@@ -145,7 +213,7 @@ CREATE TABLE jobs (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE job_events (
+CREATE TABLE IF NOT EXISTS job_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   job_id uuid NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
   status job_status NOT NULL,
@@ -153,7 +221,7 @@ CREATE TABLE job_events (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE content_briefs (
+CREATE TABLE IF NOT EXISTS content_briefs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   created_by uuid REFERENCES users(id),
@@ -168,7 +236,7 @@ CREATE TABLE content_briefs (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE publish_connections (
+CREATE TABLE IF NOT EXISTS publish_connections (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   platform text NOT NULL,
@@ -181,7 +249,7 @@ CREATE TABLE publish_connections (
   UNIQUE (tenant_id, platform)
 );
 
-CREATE TABLE publish_jobs (
+CREATE TABLE IF NOT EXISTS publish_jobs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   connection_id uuid REFERENCES publish_connections(id) ON DELETE SET NULL,
@@ -197,7 +265,7 @@ CREATE TABLE publish_jobs (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE conversations (
+CREATE TABLE IF NOT EXISTS conversations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   platform text NOT NULL,
@@ -212,7 +280,7 @@ CREATE TABLE conversations (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE workflow_runs (
+CREATE TABLE IF NOT EXISTS workflow_runs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   created_by uuid REFERENCES users(id),
@@ -224,7 +292,7 @@ CREATE TABLE workflow_runs (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE workflow_steps (
+CREATE TABLE IF NOT EXISTS workflow_steps (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   run_id uuid NOT NULL REFERENCES workflow_runs(id) ON DELETE CASCADE,
   agent_id text NOT NULL,
@@ -238,7 +306,7 @@ CREATE TABLE workflow_steps (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE subscriptions (
+CREATE TABLE IF NOT EXISTS subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   plan_code text NOT NULL REFERENCES plans(code),
@@ -257,7 +325,7 @@ CREATE TABLE subscriptions (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE tenant_feature_flags (
+CREATE TABLE IF NOT EXISTS tenant_feature_flags (
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   feature_key text NOT NULL,
   enabled boolean NOT NULL,
@@ -267,7 +335,7 @@ CREATE TABLE tenant_feature_flags (
   PRIMARY KEY (tenant_id, feature_key)
 );
 
-CREATE TABLE usage_records (
+CREATE TABLE IF NOT EXISTS usage_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   metric text NOT NULL,
@@ -276,7 +344,7 @@ CREATE TABLE usage_records (
   recorded_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid REFERENCES tenants(id) ON DELETE SET NULL,
   actor_user_id uuid REFERENCES users(id) ON DELETE SET NULL,
@@ -289,7 +357,7 @@ CREATE TABLE audit_logs (
 
 -- Revenue autopilot contracts. These records let the product optimize against
 -- qualified leads, orders and attributable revenue instead of vanity metrics.
-CREATE TABLE revenue_goals (
+CREATE TABLE IF NOT EXISTS revenue_goals (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -304,7 +372,7 @@ CREATE TABLE revenue_goals (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE automation_policies (
+CREATE TABLE IF NOT EXISTS automation_policies (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL UNIQUE REFERENCES tenants(id) ON DELETE CASCADE,
   mode autopilot_mode NOT NULL DEFAULT 'review',
@@ -319,7 +387,7 @@ CREATE TABLE automation_policies (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE contacts (
+CREATE TABLE IF NOT EXISTS contacts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   display_name text NOT NULL,
@@ -333,7 +401,7 @@ CREATE TABLE contacts (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE opportunities (
+CREATE TABLE IF NOT EXISTS opportunities (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   contact_id uuid NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
@@ -347,7 +415,7 @@ CREATE TABLE opportunities (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   contact_id uuid REFERENCES contacts(id) ON DELETE SET NULL,
@@ -364,7 +432,7 @@ CREATE TABLE orders (
   UNIQUE (tenant_id, external_order_id)
 );
 
-CREATE TABLE attribution_events (
+CREATE TABLE IF NOT EXISTS attribution_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   contact_id uuid REFERENCES contacts(id) ON DELETE SET NULL,
@@ -379,7 +447,7 @@ CREATE TABLE attribution_events (
   occurred_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE operating_exceptions (
+CREATE TABLE IF NOT EXISTS operating_exceptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   workflow_run_id uuid REFERENCES workflow_runs(id) ON DELETE SET NULL,
@@ -397,7 +465,7 @@ CREATE TABLE operating_exceptions (
 
 -- Provider-neutral model registry. Only a secret-manager reference is stored;
 -- API keys must never be written to this table or returned to the browser.
-CREATE TABLE model_providers (
+CREATE TABLE IF NOT EXISTS model_providers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   code text NOT NULL UNIQUE,
   name text NOT NULL,
@@ -410,7 +478,7 @@ CREATE TABLE model_providers (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE model_profiles (
+CREATE TABLE IF NOT EXISTS model_profiles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   provider_id uuid NOT NULL REFERENCES model_providers(id) ON DELETE CASCADE,
   code text NOT NULL,
@@ -427,7 +495,7 @@ CREATE TABLE model_profiles (
   UNIQUE (provider_id, code)
 );
 
-CREATE TABLE tenant_model_routes (
+CREATE TABLE IF NOT EXISTS tenant_model_routes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid REFERENCES tenants(id) ON DELETE CASCADE,
   agent_id text NOT NULL,
@@ -442,7 +510,7 @@ CREATE TABLE tenant_model_routes (
   UNIQUE (tenant_id, agent_id, task_kind)
 );
 
-CREATE TABLE model_usage_events (
+CREATE TABLE IF NOT EXISTS model_usage_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   workflow_run_id uuid REFERENCES workflow_runs(id) ON DELETE SET NULL,
@@ -460,22 +528,22 @@ CREATE TABLE model_usage_events (
   UNIQUE (tenant_id, request_id)
 );
 
-CREATE INDEX idx_knowledge_documents_tenant_id ON knowledge_documents(tenant_id);
-CREATE INDEX idx_video_assets_tenant_id ON video_assets(tenant_id);
-CREATE INDEX idx_jobs_tenant_status ON jobs(tenant_id, status);
-CREATE INDEX idx_publish_jobs_tenant_status ON publish_jobs(tenant_id, status);
-CREATE INDEX idx_conversations_tenant_intent ON conversations(tenant_id, intent);
-CREATE INDEX idx_subscriptions_tenant_status ON subscriptions(tenant_id, status);
-CREATE INDEX idx_tenant_feature_flags_tenant ON tenant_feature_flags(tenant_id);
-CREATE INDEX idx_audit_logs_tenant_created_at ON audit_logs(tenant_id, created_at DESC);
-CREATE INDEX idx_revenue_goals_tenant_period ON revenue_goals(tenant_id, period_start, period_end);
-CREATE INDEX idx_contacts_tenant_intent ON contacts(tenant_id, intent);
-CREATE INDEX idx_opportunities_tenant_stage ON opportunities(tenant_id, stage);
-CREATE INDEX idx_orders_tenant_status ON orders(tenant_id, status);
-CREATE INDEX idx_attribution_events_tenant_time ON attribution_events(tenant_id, occurred_at DESC);
-CREATE INDEX idx_operating_exceptions_tenant_status ON operating_exceptions(tenant_id, status, severity);
-CREATE INDEX idx_tenant_model_routes_tenant ON tenant_model_routes(tenant_id, enabled);
-CREATE INDEX idx_model_usage_events_tenant_time ON model_usage_events(tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_knowledge_documents_tenant_id ON knowledge_documents(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_video_assets_tenant_id ON video_assets(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_jobs_tenant_status ON jobs(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_publish_jobs_tenant_status ON publish_jobs(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_conversations_tenant_intent ON conversations(tenant_id, intent);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_tenant_status ON subscriptions(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_tenant_feature_flags_tenant ON tenant_feature_flags(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_tenant_created_at ON audit_logs(tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_revenue_goals_tenant_period ON revenue_goals(tenant_id, period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_contacts_tenant_intent ON contacts(tenant_id, intent);
+CREATE INDEX IF NOT EXISTS idx_opportunities_tenant_stage ON opportunities(tenant_id, stage);
+CREATE INDEX IF NOT EXISTS idx_orders_tenant_status ON orders(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_attribution_events_tenant_time ON attribution_events(tenant_id, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_operating_exceptions_tenant_status ON operating_exceptions(tenant_id, status, severity);
+CREATE INDEX IF NOT EXISTS idx_tenant_model_routes_tenant ON tenant_model_routes(tenant_id, enabled);
+CREATE INDEX IF NOT EXISTS idx_model_usage_events_tenant_time ON model_usage_events(tenant_id, created_at DESC);
 
 -- Runtime adapter tables used by the current Next.js implementation.
 -- These keep the local demo tenant ids as text so the app can switch from
@@ -543,8 +611,43 @@ CREATE TABLE IF NOT EXISTS app_model_usage_events (
   created_at timestamptz NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS app_connector_connections (
+  id text PRIMARY KEY,
+  tenant_id text NOT NULL,
+  connector_id text NOT NULL,
+  status text NOT NULL,
+  credential_ref text,
+  scopes jsonb NOT NULL DEFAULT '[]'::jsonb,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL,
+  updated_at timestamptz NOT NULL,
+  UNIQUE (tenant_id, connector_id)
+);
+
+CREATE TABLE IF NOT EXISTS app_billing_records (
+  id text PRIMARY KEY,
+  tenant_id text NOT NULL,
+  kind text NOT NULL CHECK (kind IN ('contract', 'invoice', 'payment')),
+  title text NOT NULL,
+  amount_cny numeric NOT NULL DEFAULT 0,
+  status text NOT NULL,
+  due_date date,
+  note text,
+  created_by text NOT NULL,
+  created_at timestamptz NOT NULL,
+  updated_at timestamptz NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS app_schema_migrations (
+  id text PRIMARY KEY,
+  checksum text NOT NULL,
+  applied_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_app_uploads_tenant_created ON app_uploads(tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_app_jobs_tenant_status ON app_queue_jobs(tenant_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_app_audit_tenant_created ON app_audit_logs(tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_app_tenant_drafts_created ON app_tenant_drafts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_app_model_usage_tenant_created ON app_model_usage_events(tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_app_connectors_tenant_status ON app_connector_connections(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_app_billing_tenant_created ON app_billing_records(tenant_id, created_at DESC);

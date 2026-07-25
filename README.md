@@ -12,6 +12,7 @@ npm run dev
 默认访问：
 
 ```text
+http://127.0.0.1:3000/login
 http://127.0.0.1:3000/workspace
 ```
 
@@ -50,6 +51,22 @@ SAAS_SESSION_SECRET=至少 32 位随机字符串
 如果没有配置 `OPENAI_API_KEY`，模型网关会继续尝试兼容模型接口；仍不可用时自动回退本地 mock 输出，不影响演示。
 如果没有配置 `DATABASE_URL`，系统会继续使用 `.local-data` 本地存储。
 
+生产化相关可选配置：
+
+```text
+REDIS_URL=redis://...
+WORKER_QUEUE_NAME=ai-saas-jobs
+OBJECT_STORAGE_ENDPOINT=https://...
+OBJECT_STORAGE_BUCKET=...
+TELEGRAM_BOT_TOKEN=...
+WECOM_CORP_ID=...
+WECHAT_KF_CORP_ID=...
+GOOGLE_CLIENT_ID=...
+TIKTOK_CLIENT_KEY=...
+```
+
+配置 Redis 后，上传任务会进入 BullMQ 常驻队列；未配置时继续保留本地 API 推进模式。配置对象存储参数后，后台会把存储状态标记为待接真实适配器，并继续本地镜像保存，避免误判为已经上传到云桶。
+
 ## 当前已实现
 
 - 客户工作台 `/workspace`
@@ -71,7 +88,11 @@ SAAS_SESSION_SECRET=至少 32 位随机字符串
 - 真实视频上传：本地保存视频，并创建转码、字幕、合规审核任务
 - 本地任务队列：展示排队中、需审核等任务状态
 - 登录角色演示：平台管理员、客户管理员、运营员工、只读观察员
+- 登录页面 `/login`：通过 httpOnly cookie 登录，`/admin` 和 `/workspace` 已由 `proxy.ts` 保护
 - PostgreSQL 表结构草案：见 `db/schema.sql`
+- PostgreSQL 迁移命令：`npm run db:migrate`
+- PostgreSQL 初始化 seed：`npm run db:seed`
+- BullMQ worker 启动命令：`npm run worker`
 - PostgreSQL 表结构已增加套餐、套餐功能、订阅、租户功能开关
 - 指挥官一句话任务输入
 - 11 个 AI 员工配置
@@ -84,6 +105,10 @@ SAAS_SESSION_SECRET=至少 32 位随机字符串
 - OpenAI API 服务端接入框架：有 Key 时调用真实模型，无 Key 或失败时自动回退 mock
 - 统一模型网关：支持 OpenAI、OpenAI-compatible 备用端点和 mock 回退，并记录模型调用事件
 - PostgreSQL 运行时适配层：配置 `DATABASE_URL` 后，上传、任务、审计、客户开通草稿和模型调用事件写入数据库
+- 连接器状态中心：Telegram、企微、微信客服、YouTube、TikTok 按环境变量判断是否可进入真实授权；抖音、快手、小红书、视频号默认素材包/人工流
+- 对象存储状态中心：预留 S3/R2/OSS 兼容配置，并保留本地镜像
+- Redis/BullMQ 队列入口：上传任务可入队，常驻 worker 可消费任务
+- 合同、发票、收款记录接口：平台管理员可创建账务记录，先记录业务单据，后续接支付网关
 - 服务端会话基础：登录、退出、当前用户接口使用 httpOnly cookie，现有演示角色 header 仍兼容
 - 后台客户开通草稿：平台管理员保存后会写入 PostgreSQL 或本地 `.local-data`
 - 任务执行入口：上传后的知识库和视频任务可通过 worker API 推进状态
@@ -94,7 +119,7 @@ SAAS_SESSION_SECRET=至少 32 位随机字符串
 
 服务器准备前，当前版本先做成“本地 SaaS 雏形”。它已经具备客户工作区和平台后台的产品结构，但数据仍来自本地 mock。
 
-当前已经有服务端会话基础、本地授权模型、接口拦截和 PostgreSQL 运行时适配层，但还不是完整生产权限隔离。服务器准备好后，必须继续接生产登录页、角色权限中间件、对象存储、常驻任务队列和租户级数据隔离。
+当前已经有登录页面、服务端会话、本地授权模型、路由保护、PostgreSQL 迁移/seed、对象存储状态、BullMQ 队列入口、连接器状态和账务记录接口。服务器准备好后，仍需把演示用户替换为真实账号体系，把 token/secret 接入密钥管理，并完成官方平台授权、真实媒体处理和支付网关。
 
 客户未来使用时，系统可以做成：
 

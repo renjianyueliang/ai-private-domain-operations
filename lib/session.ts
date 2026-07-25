@@ -73,12 +73,14 @@ function getCookieFromHeader(headerValue?: string | null) {
   return cookie?.slice(sessionCookieName.length + 1) ?? null;
 }
 
-export function getUserFromRequest(request: Request): DemoUser {
+export function getSessionUserFromRequest(request: Request): DemoUser | null {
   const token = getCookieFromHeader(request.headers.get("cookie"));
   const sessionUser = verifySessionToken(token);
-  if (sessionUser) return sessionUser;
+  return sessionUser;
+}
 
-  return getDemoUserById(request.headers.get("x-demo-user"));
+export function getUserFromRequest(request: Request): DemoUser {
+  return getSessionUserFromRequest(request) ?? getDemoUserById(request.headers.get("x-demo-user"));
 }
 
 export async function getUserFromServerCookies(): Promise<DemoUser> {

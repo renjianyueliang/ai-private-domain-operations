@@ -97,6 +97,39 @@ export async function ensureRuntimeSchema() {
       created_at timestamptz NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS app_connector_connections (
+      id text PRIMARY KEY,
+      tenant_id text NOT NULL,
+      connector_id text NOT NULL,
+      status text NOT NULL,
+      credential_ref text,
+      scopes jsonb NOT NULL DEFAULT '[]'::jsonb,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL,
+      updated_at timestamptz NOT NULL,
+      UNIQUE (tenant_id, connector_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS app_billing_records (
+      id text PRIMARY KEY,
+      tenant_id text NOT NULL,
+      kind text NOT NULL CHECK (kind IN ('contract', 'invoice', 'payment')),
+      title text NOT NULL,
+      amount_cny numeric NOT NULL DEFAULT 0,
+      status text NOT NULL,
+      due_date date,
+      note text,
+      created_by text NOT NULL,
+      created_at timestamptz NOT NULL,
+      updated_at timestamptz NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS app_schema_migrations (
+      id text PRIMARY KEY,
+      checksum text NOT NULL,
+      applied_at timestamptz NOT NULL DEFAULT now()
+    );
+
     CREATE INDEX IF NOT EXISTS idx_app_uploads_tenant_created
       ON app_uploads(tenant_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_app_jobs_tenant_status
@@ -107,6 +140,10 @@ export async function ensureRuntimeSchema() {
       ON app_tenant_drafts(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_app_model_usage_tenant_created
       ON app_model_usage_events(tenant_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_app_connectors_tenant_status
+      ON app_connector_connections(tenant_id, status);
+    CREATE INDEX IF NOT EXISTS idx_app_billing_tenant_created
+      ON app_billing_records(tenant_id, created_at DESC);
   `).then(() => undefined);
 
   await globalForPg.aiSaasSchemaReady;

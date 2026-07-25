@@ -20,6 +20,7 @@ import {
   Inbox,
   Layers3,
   LayoutDashboard,
+  LogOut,
   Menu,
   MessageSquareText,
   Network,
@@ -67,7 +68,7 @@ const adminNavigation: NavItem[] = [
   { label: "套餐与订阅", href: "#admin-plans", icon: PackageCheck },
   { label: "行业模板", href: "#admin-industries", icon: Layers3 },
   { label: "AI 与自动化", href: "#admin-ai", icon: BrainCircuit },
-  { label: "功能与连接器", href: "#admin-connectors", icon: Blocks },
+  { label: "功能与连接器", href: "#admin-production", icon: Blocks },
   { label: "用量与账单", href: "#admin-usage", icon: Activity },
   { label: "审计与安全", href: "#admin-readiness", icon: ShieldCheck },
 ];
@@ -86,7 +87,7 @@ export function SaasAppShell({
   const utilityLinks = mode === "admin"
     ? [
         { label: "平台配置", href: "#admin-ai", icon: Settings2 },
-        { label: "上线检查", href: "#admin-readiness", icon: CircleHelp },
+        { label: "上线检查", href: "#admin-production", icon: CircleHelp },
       ]
     : [
         { label: "资料与权限", href: "#foundation", icon: Settings2 },
@@ -105,6 +106,11 @@ export function SaasAppShell({
     window.addEventListener("hashchange", syncHash);
     return () => window.removeEventListener("hashchange", syncHash);
   }, [navigation]);
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.assign("/login");
+  }
 
   return (
     <div className={`saas-app-frame ${mobileOpen ? "nav-open" : ""}`}>
@@ -198,6 +204,10 @@ export function SaasAppShell({
               {mode === "admin" ? "进入客户工作台" : "平台总后台"}
               <ChevronRight size={16} />
             </Link>
+            <button className="topbar-switch topbar-logout" type="button" onClick={logout}>
+              <LogOut size={17} />
+              退出
+            </button>
           </div>
         </header>
 

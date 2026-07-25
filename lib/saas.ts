@@ -310,8 +310,8 @@ export function formatNumber(value: number) {
 export const saasReadiness = [
   {
     title: "多租户 Workspace",
-    status: "已做演示层",
-    description: "不同客户可切换独立工作区，后续接数据库实现真实隔离。",
+    status: "已接生产骨架",
+    description: "不同客户可切换独立工作区；运行时数据已支持 PostgreSQL 或本地回退。",
   },
   {
     title: "套餐与授权",
@@ -325,8 +325,8 @@ export const saasReadiness = [
   },
   {
     title: "渠道接入",
-    status: "待服务器",
-    description: "企业微信、微信客服、Telegram、YouTube、TikTok 等需要服务器、官方授权和回调。",
+    status: "已建连接器模型",
+    description: "已按官方 API/Webhook、素材包和禁用边界建模；真实连接需客户凭证和平台审核。",
   },
   {
     title: "行业模板",
@@ -350,13 +350,13 @@ export const saasReadiness = [
   },
   {
     title: "任务队列",
-    status: "本地演示层",
-    description: "已支持知识库解析、视频转码、字幕生成和合规审核任务入队。",
+    status: "已接 BullMQ 入口",
+    description: "无 Redis 时可 API 触发执行；配置 REDIS_URL 后可启动 BullMQ 常驻 Worker。",
   },
   {
     title: "登录权限",
-    status: "演示角色层",
-    description: "已加入平台管理员、客户管理员、运营员工、只读观察员的权限演示。",
+    status: "已接会话保护",
+    description: "已加入登录页、httpOnly 会话和 /admin、/workspace 路由保护，后续替换真实账号源。",
   },
   {
     title: "数据库表结构",
@@ -365,12 +365,12 @@ export const saasReadiness = [
   },
   {
     title: "数据持久化",
-    status: "待数据库",
-    description: "正式 SaaS 建议使用 PostgreSQL 存储客户、任务、日志和知识库。",
+    status: "已支持 PostgreSQL",
+    description: "上传、任务、审计、客户开通草稿、模型调用和账务记录已支持数据库写入。",
   },
   {
     title: "计费收款",
-    status: "待确认",
-    description: "后续根据你选择的支付/授权方式接入。",
+    status: "已接账务记录",
+    description: "合同、发票、收款记录可审计保存；真实支付网关仍需商户号和回调密钥。",
   },
 ];
