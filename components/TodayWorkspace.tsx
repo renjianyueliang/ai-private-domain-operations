@@ -27,6 +27,8 @@ type TodayWorkspaceProps = {
   highIntentCount: number;
   paidOrderCount: number;
   industryName: string;
+  view?: "today" | "review" | "channels" | "all";
+  tenantId?: string;
 };
 
 type IndustryWorkspaceConfig = {
@@ -167,6 +169,8 @@ export function TodayWorkspace({
   highIntentCount,
   paidOrderCount,
   industryName,
+  view = "all",
+  tenantId,
 }: TodayWorkspaceProps) {
   const config = industryWorkspaceConfigs[industryName] ?? defaultWorkspaceConfig;
   const setupItems = config.setupItems;
@@ -176,6 +180,7 @@ export function TodayWorkspace({
   );
   const [reviewedItems, setReviewedItems] = useState<string[]>([]);
   const setupPercent = Math.round((completedSetup.length / setupItems.length) * 100);
+  const tenantSuffix = tenantId ? `?tenant=${encodeURIComponent(tenantId)}` : "";
 
   const todayTasks = useMemo(
     () => [
@@ -186,7 +191,7 @@ export function TodayWorkspace({
         detail: config.contentTaskDetail,
         owner: "内容员工 → 合规员工",
         time: "预计 8 分钟",
-        href: "#review",
+        href: `/workspace/review${tenantSuffix}`,
         cta: "去审核",
         icon: ClipboardCheck,
       },
@@ -197,7 +202,7 @@ export function TodayWorkspace({
         detail: config.leadTaskDetail,
         owner: "私域员工 → 销售员工",
         time: "超过 22 分钟",
-        href: "#operations",
+        href: `/workspace/inbox${tenantSuffix}`,
         cta: "查看会话",
         icon: MessageSquareText,
       },
@@ -208,7 +213,7 @@ export function TodayWorkspace({
         detail: "连接后才能自动承接咨询与发布；授权动作仍需账号管理员完成。",
         owner: "渠道管理员",
         time: "一次性配置",
-        href: "#channels",
+        href: `/workspace/channels${tenantSuffix}`,
         cta: "开始连接",
         icon: Link2,
       },
@@ -251,6 +256,7 @@ export function TodayWorkspace({
 
   return (
     <>
+      {(view === "all" || view === "today") && (
       <section id="today-actions" className="today-command-center" aria-label="今日运营工作台">
         <div className="today-heading">
           <div>
@@ -258,7 +264,7 @@ export function TodayWorkspace({
             <h2>先推进能带来客户的 3 件事</h2>
             <p>{tenantName} 的内容、获客、私域与成交状态已经汇总到这里。</p>
           </div>
-          <a className="today-run-button" href="#review">
+          <a className="today-run-button" href={`/workspace/review${tenantSuffix}`}>
             <ClipboardCheck size={18} aria-hidden="true" />
             处理 3 项待办
           </a>
@@ -358,7 +364,9 @@ export function TodayWorkspace({
           </div>
         </article>
       </section>
+      )}
 
+      {(view === "all" || view === "review") && (
       <section id="review" className="review-center" aria-label="人工审核中心">
         <div className="section-heading-row compact-heading">
           <div>
@@ -401,7 +409,9 @@ export function TodayWorkspace({
           })}
         </div>
       </section>
+      )}
 
+      {(view === "all" || view === "channels") && (
       <section id="channels" className="channel-center" aria-label="渠道连接状态">
         <div className="section-heading-row compact-heading">
           <div>
@@ -428,6 +438,7 @@ export function TodayWorkspace({
           <span><Clock3 size={14} />连接日志将进入审计中心</span>
         </div>
       </section>
+      )}
     </>
   );
 }

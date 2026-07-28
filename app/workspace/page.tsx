@@ -20,8 +20,9 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
       subtitle={`${currentTenant.name} · 内容、获客、私域、成交与收益归因`}
       contextTitle={currentTenant.name}
       contextMeta={`${currentTenant.plan} · ${currentTenant.renewalDate} 到期`}
+      tenantId={currentTenant.id}
     >
-      <CommanderDashboard initialTenantId={tenant} />
+      <CommanderDashboard initialTenantId={tenant} initialView="today" />
     </SaasAppShell>
   );
 }

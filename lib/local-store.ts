@@ -60,6 +60,28 @@ export type AuditLog = {
   createdAt: string;
 };
 
+export type KnowledgeChunk = {
+  id: string;
+  title: string;
+  text: string;
+};
+
+export type KnowledgeSource = {
+  uploadId: string;
+  jobId?: string;
+  title: string;
+  fileName: string;
+  status: QueueJob["status"] | StoredUpload["status"];
+  summary: string;
+  extractedPreview?: string;
+  keywords: string[];
+  chunks: KnowledgeChunk[];
+  indexedChunks?: number;
+  canUseForAi: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type LocalSnapshot = {
   uploads: StoredUpload[];
   jobs: QueueJob[];
@@ -124,6 +146,88 @@ function parsePayload(value: unknown): QueueJob["payload"] {
   }
 
   return {};
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseKnowledgeChunks(value: unknown): KnowledgeChunk[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item, index) => {
+      if (!isRecord(item)) return null;
+      return {
+        id: typeof item.id === "string" ? item.id : `chunk-${index + 1}`,
+        title: typeof item.title === "string" ? item.title : `资料片段 ${index + 1}`,
+        text: typeof item.text === "string" ? item.text : "",
+      };
+    })
+    .filter((item): item is KnowledgeChunk => Boolean(item?.text));
+}
+
+function parseKnowledgeKeywords(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map(String).filter(Boolean).slice(0, 12);
+}
+
+function buildKnowledgeSources(snapshot: LocalSnapshot, tenantId: string): KnowledgeSource[] {
+  const knowledgeUploads = snapshot.uploads.filter(
+    (upload) => upload.tenantId === tenantId && upload.kind === "knowledge",
+  );
+  const knowledgeJobs = snapshot.jobs.filter(
+    (job) => job.tenantId === tenantId && job.kind === "knowledge_ingest",
+  );
+
+  return knowledgeUploads.map((upload) => {
+    const job = knowledgeJobs.find((candidate) => candidate.uploadId === upload.id);
+    const previewPayload = isRecord(job?.payload.knowledgePreview)
+      ? job?.payload.knowledgePreview
+      : undefined;
+    const summary =
+      typeof previewPayload?.summary === "string"
+        ? previewPayload.summary
+        : typeof job?.payload.extractedPreview === "string"
+          ? `已抽取《${upload.originalName}》的文本预览，可用于内容生成引用。`
+          : job?.status === "done"
+            ? `《${upload.originalName}》已处理，但暂未生成可展示摘要。`
+            : `《${upload.originalName}》等待解析或需要文档解析器。`;
+    const extractedPreview =
+      typeof job?.payload.extractedPreview === "string" ? job.payload.extractedPreview : undefined;
+
+    return {
+      uploadId: upload.id,
+      jobId: job?.id,
+      title: upload.originalName.replace(/\.[^.]+$/, ""),
+      fileName: upload.originalName,
+      status: job?.status ?? upload.status,
+      summary,
+      extractedPreview,
+      keywords: parseKnowledgeKeywords(previewPayload?.keywords),
+      chunks: parseKnowledgeChunks(previewPayload?.chunks),
+      indexedChunks:
+        typeof job?.payload.indexedChunks === "number" ? job.payload.indexedChunks : undefined,
+      canUseForAi: job?.status === "done" && Boolean(extractedPreview || previewPayload),
+      createdAt: upload.createdAt,
+      updatedAt: job?.updatedAt ?? upload.createdAt,
+    };
+  });
+}
+
+export async function listKnowledgeSources(tenantId: string, user: DemoUser) {
+  if (!findTenantById(tenantId)) {
+    throw new Error("客户工作区不存在。");
+  }
+
+  if (!canAccessTenant(user, tenantId)) {
+    throw new Error("没有权限查看该客户工作区。");
+  }
+
+  const snapshot = await readSnapshot();
+  return {
+    storageMode: getStorageMode(),
+    knowledgeSources: buildKnowledgeSources(snapshot, tenantId),
+  };
 }
 
 async function readPostgresSnapshot(): Promise<LocalSnapshot> {
@@ -354,6 +458,7 @@ export async function listTenantState(tenantId: string, user: DemoUser) {
     storageMode: getStorageMode(),
     uploads: snapshot.uploads.filter((upload) => upload.tenantId === tenantId),
     jobs: snapshot.jobs.filter((job) => job.tenantId === tenantId),
+    knowledgeSources: buildKnowledgeSources(snapshot, tenantId),
     auditLogs: snapshot.auditLogs
       .filter((log) => log.tenantId === tenantId)
       .slice(-20)

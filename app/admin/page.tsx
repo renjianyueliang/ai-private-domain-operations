@@ -10,7 +10,7 @@ export default function AdminPage() {
       contextTitle="商业化控制台"
       contextMeta="5 个客户工作区"
     >
-      <AdminDashboard />
+      <AdminDashboard initialView="overview" />
     </SaasAppShell>
   );
 }

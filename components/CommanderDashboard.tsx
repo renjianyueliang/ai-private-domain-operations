@@ -27,9 +27,19 @@ import {
   getTenantOperations,
 } from "../lib/operations";
 import { getRevenueAutopilotProfile } from "../lib/autopilot";
+import { AcquisitionCockpit } from "./AcquisitionCockpit";
+import { AcquisitionPlanWizard } from "./AcquisitionPlanWizard";
+import { AccountMatrixCenter } from "./AccountMatrixCenter";
+import { ClientPublishCenter } from "./ClientPublishCenter";
+import { ClientReviewCenter } from "./ClientReviewCenter";
 import { FoundationPanel } from "./FoundationPanel";
+import { PublicGrowthRadar } from "./PublicGrowthRadar";
 import { RevenueAutopilotCenter } from "./RevenueAutopilotCenter";
+import { ReplyStrategyCenter } from "./ReplyStrategyCenter";
+import { SalesSopCenter } from "./SalesSopCenter";
 import { TodayWorkspace } from "./TodayWorkspace";
+import { UnifiedInbox } from "./UnifiedInbox";
+import { VideoCreationCenter } from "./VideoCreationCenter";
 
 const statusLabels: Record<StepStatus, string> = {
   waiting: "等待中",
@@ -132,6 +142,49 @@ const platformPlaybook = [
   },
 ];
 
+export type WorkspaceView =
+  | "today"
+  | "plan"
+  | "acquisition"
+  | "radar"
+  | "accounts"
+  | "foundation"
+  | "video"
+  | "channels"
+  | "inbox"
+  | "crm"
+  | "replies"
+  | "sop"
+  | "commander"
+  | "review"
+  | "analytics"
+  | "settings"
+  | "operations";
+
+export const workspaceViews: WorkspaceView[] = [
+  "today",
+  "plan",
+  "acquisition",
+  "radar",
+  "accounts",
+  "foundation",
+  "video",
+  "channels",
+  "inbox",
+  "crm",
+  "replies",
+  "sop",
+  "commander",
+  "review",
+  "analytics",
+  "settings",
+  "operations",
+];
+
+export function normalizeWorkspaceView(view?: string): WorkspaceView {
+  return workspaceViews.includes(view as WorkspaceView) ? (view as WorkspaceView) : "today";
+}
+
 function updateStep(
   steps: WorkflowStep[],
   stepId: string,
@@ -155,9 +208,10 @@ function createTenantWorkflow(command: string, tenant: SaasTenant): WorkflowRun 
 
 type CommanderDashboardProps = {
   initialTenantId?: string;
+  initialView?: string;
 };
 
-export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps) {
+export function CommanderDashboard({ initialTenantId, initialView }: CommanderDashboardProps) {
   const initialTenant = getTenantById(initialTenantId);
   const [command, setCommand] = useState(initialTenant.defaultCommand);
   const [run, setRun] = useState<WorkflowRun>(() =>
@@ -172,6 +226,7 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
   const [approved, setApproved] = useState(false);
 
   const selectedTenant = getTenantById(selectedTenantId);
+  const activeView = normalizeWorkspaceView(initialView);
   const tenantOperations = getTenantOperations(selectedTenant.id);
   const industryTemplate = getIndustryTemplateById(tenantOperations.industryTemplateId);
   const sampleCommands =
@@ -313,25 +368,44 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
 
   return (
     <main className="dashboard-shell">
-      <RevenueAutopilotCenter
-        tenantName={selectedTenant.name}
-        riskLevel={industryTemplate.riskLevel}
-        profile={autopilotProfile}
-        isRunning={isRunning}
-        isPaused={isPaused}
-        onRun={startWorkflow}
-        onTogglePause={toggleWorkflowPause}
-      />
+      {activeView === "today" && (
+        <>
+          <RevenueAutopilotCenter
+            tenantName={selectedTenant.name}
+            riskLevel={industryTemplate.riskLevel}
+            profile={autopilotProfile}
+            isRunning={isRunning}
+            isPaused={isPaused}
+            onRun={startWorkflow}
+            onTogglePause={toggleWorkflowPause}
+          />
 
-      <TodayWorkspace
-        tenantName={selectedTenant.name}
-        readyContentCount={readyContentCount}
-        reviewVideoCount={reviewVideoCount}
-        highIntentCount={highIntentCount}
-        paidOrderCount={selectedTenant.funnel.paidOrders}
-        industryName={industryTemplate.name}
-      />
+          <TodayWorkspace
+            tenantName={selectedTenant.name}
+            readyContentCount={readyContentCount}
+            reviewVideoCount={reviewVideoCount}
+            highIntentCount={highIntentCount}
+            paidOrderCount={selectedTenant.funnel.paidOrders}
+            industryName={industryTemplate.name}
+            view="today"
+            tenantId={selectedTenant.id}
+          />
+        </>
+      )}
 
+      {activeView === "acquisition" && <AcquisitionCockpit tenantId={selectedTenant.id} />}
+
+      {activeView === "plan" && <AcquisitionPlanWizard tenantId={selectedTenant.id} />}
+
+      {activeView === "radar" && <PublicGrowthRadar tenantId={selectedTenant.id} />}
+
+      {activeView === "accounts" && <AccountMatrixCenter tenantId={selectedTenant.id} />}
+
+      {activeView === "review" && <ClientReviewCenter tenantId={selectedTenant.id} />}
+
+      {activeView === "channels" && <ClientPublishCenter tenantId={selectedTenant.id} />}
+
+      {activeView === "commander" && (
       <section id="commander" className="commander-card" aria-label="AI 指挥官输入区">
         <div>
           <label htmlFor="command">指挥官任务</label>
@@ -363,7 +437,9 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
           </button>
         </div>
       </section>
+      )}
 
+      {activeView === "foundation" && (
       <div id="foundation" className="anchor-section">
         <FoundationPanel
           tenantId={selectedTenant.id}
@@ -372,7 +448,20 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
           videoAccess={videoAccess}
         />
       </div>
+      )}
 
+      {activeView === "video" && <VideoCreationCenter tenantId={selectedTenant.id} />}
+
+      {activeView === "inbox" && <UnifiedInbox tenantId={selectedTenant.id} view="inbox" />}
+
+      {activeView === "crm" && <UnifiedInbox tenantId={selectedTenant.id} view="lead-crm" />}
+
+      {activeView === "replies" && <ReplyStrategyCenter tenantId={selectedTenant.id} />}
+
+      {activeView === "sop" && <SalesSopCenter tenantId={selectedTenant.id} />}
+
+      {activeView === "analytics" && (
+      <>
       <section className="capability-grid" aria-label="四大能力">
         {customerFeatureCards.map(({ feature, title, description }) => {
           const access = getFeatureAccess(selectedTenant, feature);
@@ -536,7 +625,53 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
         </article>
 
       </section>
+      </>
+      )}
 
+      {activeView === "settings" && (
+      <section id="settings" className="workspace-settings-panel" aria-label="资料与设置">
+        <div className="section-heading-row compact-heading">
+          <div>
+            <div className="section-kicker">资料与设置</div>
+            <h2>客户上线前必须确认的基础配置</h2>
+          </div>
+          <p>这里把知识库、套餐、行业规则、渠道授权和成员权限放在一个轻量入口，避免客户不知道从哪里开始。</p>
+        </div>
+        <div className="settings-grid">
+          <article>
+            <strong>客户与套餐</strong>
+            <dl>
+              <div><dt>客户</dt><dd>{selectedTenant.name}</dd></div>
+              <div><dt>行业</dt><dd>{industryTemplate.name}</dd></div>
+              <div><dt>套餐</dt><dd>{entitlement.plan.name} · {entitlement.plan.priceText}</dd></div>
+              <div><dt>到期</dt><dd>{selectedTenant.renewalDate}</dd></div>
+            </dl>
+          </article>
+          <article>
+            <strong>知识库状态</strong>
+            <div className="settings-token-list">
+              {selectedTenant.knowledgeBase.map((item) => (
+                <span key={item.title} className={item.status}>
+                  {item.title} · {item.type}
+                </span>
+              ))}
+            </div>
+          </article>
+          <article>
+            <strong>渠道授权</strong>
+            <div className="settings-token-list">
+              {selectedTenant.channels.map((channel) => (
+                <span key={channel.name} className={channel.status}>
+                  {channel.name} · {channel.description}
+                </span>
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+      )}
+
+      {activeView === "operations" && (
       <section id="operations" className="ops-overview" aria-label="行业自动化运营中心">
         <div className="section-heading-row">
           <div>
@@ -746,7 +881,9 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
           </article>
         </div>
       </section>
+      )}
 
+      {activeView === "commander" && (
       <section id="team" className="workspace-grid">
         <aside className="agent-sidebar" aria-label="AI 员工列表">
           <div className="panel-heading">
@@ -951,6 +1088,7 @@ export function CommanderDashboard({ initialTenantId }: CommanderDashboardProps)
           </button>
         </aside>
       </section>
+      )}
     </main>
   );
 }

@@ -24,6 +24,25 @@ type QueueJobView = {
   logs: string[];
 };
 
+type KnowledgeSourceView = {
+  uploadId: string;
+  jobId?: string;
+  title: string;
+  fileName: string;
+  status: string;
+  summary: string;
+  extractedPreview?: string;
+  keywords: string[];
+  chunks: Array<{
+    id: string;
+    title: string;
+    text: string;
+  }>;
+  indexedChunks?: number;
+  canUseForAi: boolean;
+  updatedAt: string;
+};
+
 type AuditLogView = {
   id: string;
   actor: string;
@@ -35,6 +54,7 @@ type WorkspaceState = {
   storageMode: "local" | "postgres";
   uploads: StoredUploadView[];
   jobs: QueueJobView[];
+  knowledgeSources: KnowledgeSourceView[];
   auditLogs: AuditLogView[];
 };
 
@@ -54,6 +74,7 @@ const emptyState: WorkspaceState = {
   storageMode: "local",
   uploads: [],
   jobs: [],
+  knowledgeSources: [],
   auditLogs: [],
 };
 
@@ -114,6 +135,7 @@ export function FoundationPanel({
       storageMode: data.storageMode ?? "local",
       uploads: data.uploads ?? [],
       jobs: data.jobs ?? [],
+      knowledgeSources: data.knowledgeSources ?? [],
       auditLogs: data.auditLogs ?? [],
     });
   }
@@ -304,6 +326,49 @@ export function FoundationPanel({
       </div>
 
       <div className="foundation-state-grid">
+        <article className="foundation-card knowledge-preview-card">
+          <div className="panel-heading compact">
+            <span>知识库解析预览</span>
+            <small>{state.knowledgeSources.filter((source) => source.canUseForAi).length} 个可引用</small>
+          </div>
+          <div className="foundation-list">
+            {state.knowledgeSources.length === 0 ? (
+              <p>暂无知识库解析结果。上传 TXT/MD/CSV/JSON 后点击“执行队列”即可生成预览。</p>
+            ) : (
+              state.knowledgeSources.slice(0, 4).map((source) => (
+                <div key={source.uploadId} className="knowledge-source-card">
+                  <div className="knowledge-source-heading">
+                    <strong>{source.title}</strong>
+                    <em className={source.canUseForAi ? "ready" : "review"}>
+                      {source.canUseForAi ? "可被 AI 引用" : statusLabel(source.status)}
+                    </em>
+                  </div>
+                  <p>{source.summary}</p>
+                  {source.keywords.length > 0 && (
+                    <div className="knowledge-keyword-row">
+                      {source.keywords.slice(0, 8).map((keyword) => (
+                        <span key={keyword}>{keyword}</span>
+                      ))}
+                    </div>
+                  )}
+                  {source.chunks.slice(0, 2).map((chunk) => (
+                    <blockquote key={chunk.id}>
+                      <strong>{chunk.title}</strong>
+                      <span>{chunk.text}</span>
+                    </blockquote>
+                  ))}
+                  {source.extractedPreview && source.chunks.length === 0 && (
+                    <blockquote>
+                      <strong>文本预览</strong>
+                      <span>{source.extractedPreview}</span>
+                    </blockquote>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </article>
+
         <article className="foundation-card">
           <div className="panel-heading compact">
             <span>最近上传</span>

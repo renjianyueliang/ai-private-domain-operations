@@ -13,13 +13,13 @@ npm run dev
 
 ```text
 http://127.0.0.1:3000/login
-http://127.0.0.1:3000/workspace
+http://127.0.0.1:3000/workspace/today
 ```
 
 平台后台演示入口：
 
 ```text
-http://127.0.0.1:3000/admin
+http://127.0.0.1:3000/admin/overview
 ```
 
 根路径 `http://127.0.0.1:3000` 会自动跳转到客户工作台。
@@ -35,6 +35,16 @@ http://127.0.0.1:3000/admin
 - 增加渠道连接器状态，明确官方 API、待授权、待认证和半自动发布边界。
 - 平台后台增加客户健康度、续费风险、额度预警、连接异常和客户开通向导。
 - 客户开通向导支持行业、套餐、到期日和席位配置演示。
+- 客户端已拆成独立业务页面：今日待办、获客计划、AI 获客舱、公域雷达、账号矩阵、视频创作、私信聚合、线索 CRM、自动回复、销售 SOP 等。
+- 后台已拆成独立管理页面：经营总览、客户管理、套餐订阅、用量账单、行业模板、功能授权、模型路由、连接器生产依赖、审计风控、上线检查。
+- 主导航已从单页滚动改为真实路由，点击菜单只进入对应功能页，避免长页面上下滚动查找。
+- 功能授权、审计复核、获客计划、自动回复策略已从纯前端状态升级为本地可保存记录。
+- 知识库上传后，TXT/MD/CSV/JSON 可通过本地 worker 抽取预览、关键词和知识片段，并在获客计划、内容草稿、回复策略里展示引用来源。
+- 新增内容草稿生成接口：基于客户产品、目标客户、资料钩子和知识库片段生成待审核内容草稿。
+- 新增客户侧闭环：内容审核中心可审核/驳回草稿，并一键生成视频任务。
+- 新增视频任务流转：审核通过的内容草稿可生成脚本、平台版本、字幕校对和合规清单。
+- 新增发布包中心：从视频任务生成 YouTube/TikTok/抖音/小红书/快手/视频号/Telegram 等平台素材包或官方 API 待审核计划。
+- 新增私信动作日志：确认发送、转人工、加入跟进会写入本地动作记录，便于后续接 CRM 和审计。
 - 桌面端与移动端导航均完成响应式验证。
 
 ## 接入 OpenAI API
@@ -69,8 +79,10 @@ TIKTOK_CLIENT_KEY=...
 
 ## 当前已实现
 
-- 客户工作台 `/workspace`
-- 平台管理后台 `/admin`
+- 客户工作台 `/workspace/today`，兼容 `/workspace`
+- 平台管理后台 `/admin/overview`，兼容 `/admin`
+- 客户端真实路由：`/workspace/plan`、`/workspace/acquisition`、`/workspace/radar`、`/workspace/accounts`、`/workspace/foundation`、`/workspace/video`、`/workspace/channels`、`/workspace/inbox`、`/workspace/crm`、`/workspace/replies`、`/workspace/sop`、`/workspace/commander`、`/workspace/review`、`/workspace/analytics`、`/workspace/settings`
+- 后台真实路由：`/admin/customers`、`/admin/plans`、`/admin/usage`、`/admin/templates`、`/admin/features`、`/admin/ai`、`/admin/connectors`、`/admin/audit`、`/admin/readiness`
 - 根路径自动跳转到客户工作台
 - 客户端与平台后台页面分离：客户只看自己的工作区，平台方在后台看全部客户
 - 多行业模板：交易教学、金融、医美、中医
@@ -84,6 +96,18 @@ TIKTOK_CLIENT_KEY=...
 - 视频剪辑与平台适配中心：短视频切片、尺寸比例、时长、字幕、平台版本、风控检查
 - 多平台发布中心：YouTube、TikTok、抖音、快手、小红书、视频号、企业微信、Telegram 的接入状态演示
 - 私域会话中心：评论/私信进入线索池，AI 生成回复建议，并按风险转人工
+- AI 获客舱：把客户获客目标拆成内容、视频、发布、私信承接、CRM 跟进和合规审核任务
+- 公域获客雷达：按行业关键词、地区和平台筛选潜在选题/流量机会
+- 账号矩阵：展示不同平台账号授权、健康度、每日限制、最近动作和风险提醒
+- 自动回复策略：本地模拟回复规则开关、命中条件和高风险转人工
+- 销售 SOP：按线索阶段展示 AI 支持、人工作业边界和可复制话术
+- 获客计划保存接口：`/api/workspace/acquisition-plans`
+- 内容草稿生成接口：`/api/workspace/content-drafts`
+- 内容审核与状态更新接口：`PATCH /api/workspace/content-drafts`
+- 视频任务接口：`/api/workspace/video-jobs`
+- 发布计划接口：`/api/workspace/publish-plans`
+- 私信/线索动作日志接口：`/api/workspace/conversation-actions`
+- 自动回复策略保存接口：`/api/workspace/reply-strategies`
 - 真实知识库上传：本地保存文件，并创建知识库解析任务
 - 真实视频上传：本地保存视频，并创建转码、字幕、合规审核任务
 - 本地任务队列：展示排队中、需审核等任务状态
@@ -113,7 +137,12 @@ TIKTOK_CLIENT_KEY=...
 - 后台客户开通草稿：平台管理员保存后会写入 PostgreSQL 或本地 `.local-data`
 - 任务执行入口：上传后的知识库和视频任务可通过 worker API 推进状态
 - SaaS 多租户演示层：workspace、行业、套餐、到期、用量、渠道状态、知识库状态、内容任务、视频任务、私域会话
-- SaaS 总后台演示层：客户数、有效客户、到期客户、年化套餐额、租户列表、行业模板库、套餐授权中心
+- SaaS 总后台演示层：客户数、有效客户、到期客户、年化套餐额、租户列表、行业模板库、套餐授权中心、功能授权矩阵、审计与风控中心
+- 后台功能授权保存接口：`/api/admin/features`
+- 后台审计复核接口：`/api/admin/audit`
+- 本地控制记录：无 PostgreSQL 时写入 `.local-data/control.json`；配置 `DATABASE_URL` 后写入 `app_tenant_feature_overrides`、`app_risk_events`、`app_acquisition_plans`、`app_reply_strategy_snapshots`
+- 内容草稿记录：无 PostgreSQL 时写入 `.local-data/content-drafts.json`；配置 `DATABASE_URL` 后写入 `app_content_drafts`
+- 客户执行流记录：无 PostgreSQL 时写入 `.local-data/client-workflow.json`；配置 `DATABASE_URL` 后写入 `app_video_workflow_jobs`、`app_publish_plan_records`、`app_conversation_action_events`
 
 ## SaaS 化说明
 
@@ -150,8 +179,7 @@ docs/SAAS_SERVER_PLAN.md
 
 - 本地上传文件保存在 `.local-data/`。
 - `.local-data/` 已加入 `.gitignore`，避免误提交客户资料。
-- 当前只做本地保存和任务记录，还未做真实文本解析、向量检索、视频转码或字幕识别。
-- 当前 worker 可做文本类知识库抽取预览和视频处理清单生成，但 PDF/Word 解析、向量检索、FFmpeg 转码、字幕识别仍未接入。
+- 当前 worker 可做 TXT/MD/CSV/JSON 文本类知识库抽取预览、关键词和知识片段，也可生成视频处理清单；PDF/Word 解析、向量检索、FFmpeg 转码、字幕识别仍未接入。
 - 生产环境应改为对象存储 + PostgreSQL 元数据 + Redis/队列工作器。
 
 最新实施状态见：

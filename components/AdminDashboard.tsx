@@ -1,3 +1,4 @@
+"use client";
 import {
   formatNumber,
   saasReadiness,
@@ -19,6 +20,8 @@ import {
   summarizeOperations,
 } from "../lib/operations";
 import { AdminControlCenter } from "./AdminControlCenter";
+import { AdminAuditCenter } from "./AdminAuditCenter";
+import { AdminFeatureControlCenter } from "./AdminFeatureControlCenter";
 import { ModelControlCenter } from "./ModelControlCenter";
 import { ProductionStatusPanel } from "./ProductionStatusPanel";
 
@@ -42,12 +45,46 @@ const launchSteps = [
   "导入客户知识库和合规禁用表达，再让客户进入自己的工作台使用。",
 ];
 
+type AdminView =
+  | "overview"
+  | "customers"
+  | "plans"
+  | "templates"
+  | "features"
+  | "ai"
+  | "connectors"
+  | "usage"
+  | "audit"
+  | "readiness";
+
+export const adminViews: AdminView[] = [
+  "overview",
+  "customers",
+  "plans",
+  "usage",
+  "templates",
+  "features",
+  "ai",
+  "connectors",
+  "audit",
+  "readiness",
+];
+
+export function normalizeAdminView(view?: string): AdminView {
+  return adminViews.includes(view as AdminView) ? (view as AdminView) : "overview";
+}
+
 function getConversionRate(tenant: SaasTenant) {
   if (tenant.funnel.leads <= 0) return "0%";
   return `${((tenant.funnel.paidOrders / tenant.funnel.leads) * 100).toFixed(1)}%`;
 }
 
-export function AdminDashboard() {
+type AdminDashboardProps = {
+  initialView?: string;
+};
+
+export function AdminDashboard({ initialView }: AdminDashboardProps) {
+  const activeView = normalizeAdminView(initialView);
   const operationSummary = summarizeOperations();
   const tenantEntitlements = saasTenants.map((tenant) => ({
     tenant,
@@ -80,10 +117,17 @@ export function AdminDashboard() {
 
   return (
     <main className="dashboard-shell admin-shell">
-      <AdminControlCenter metrics={metrics} />
-      <ModelControlCenter />
-      <ProductionStatusPanel />
+      {activeView === "overview" && <AdminControlCenter metrics={metrics} />}
 
+      {activeView === "ai" && <ModelControlCenter />}
+
+      {activeView === "connectors" && <ProductionStatusPanel />}
+
+      {activeView === "features" && <AdminFeatureControlCenter />}
+
+      {activeView === "audit" && <AdminAuditCenter />}
+
+      {activeView === "plans" && (
       <section id="admin-plans" className="admin-section" aria-label="客户开通流程">
         <div className="section-heading-row">
           <div>
@@ -141,10 +185,10 @@ export function AdminDashboard() {
           ))}
         </div>
       </section>
+      )}
 
+      {activeView === "customers" && (
       <section id="admin-customers" className="admin-section" aria-label="客户租户列表">
-        <span id="admin-usage" className="anchor-marker" />
-        <span id="admin-connectors" className="anchor-marker" />
         <div className="section-heading-row">
           <div>
             <div className="section-kicker">租户管理</div>
@@ -287,10 +331,10 @@ export function AdminDashboard() {
                   行业模板：{industryTemplate.reviewMode}。合规规则：{tenant.complianceProfile}
                 </span>
                 <div className="tenant-actions">
-                  <a href="#admin-plans">续费</a>
-                  <a href="#admin-plans">升级套餐</a>
-                  <a href="#admin-readiness">暂停规则</a>
-                  <a href={`/workspace?tenant=${tenant.id}`}>预览客户工作台</a>
+                  <a href="/admin/plans">续费</a>
+                  <a href="/admin/plans">升级套餐</a>
+                  <a href="/admin/readiness">暂停规则</a>
+                  <a href={`/workspace/today?tenant=${tenant.id}`}>预览客户工作台</a>
                 </div>
               </div>
             </article>
@@ -298,7 +342,117 @@ export function AdminDashboard() {
           })}
         </div>
       </section>
+      )}
 
+      {activeView === "usage" && (
+      <section id="admin-usage" className="admin-section" aria-label="用量与账单">
+        <div className="section-heading-row">
+          <div>
+            <div className="section-kicker">用量与账单</div>
+            <h2>套餐额度、消耗和续费风险</h2>
+          </div>
+          <p>
+            这里只处理客户用量、套餐额度、账单提醒和升级机会。
+            客户资料详情放在「客户管理」，连接器状态放在「功能与连接器」。
+          </p>
+        </div>
+
+        <div className="admin-kpi-grid">
+          <article className="admin-kpi-card">
+            <span>总线索</span>
+            <strong>{formatNumber(metrics.contacts)}</strong>
+            <small>跨全部客户工作区</small>
+          </article>
+          <article className="admin-kpi-card">
+            <span>AI 执行</span>
+            <strong>{formatNumber(metrics.aiRuns)}</strong>
+            <small>本计费周期样例数据</small>
+          </article>
+          <article className="admin-kpi-card">
+            <span>视频任务</span>
+            <strong>{formatNumber(metrics.videoJobs)}</strong>
+            <small>用于套餐额度判断</small>
+          </article>
+          <article className="admin-kpi-card">
+            <span>年化套餐额</span>
+            <strong>¥{formatNumber(metrics.yearlyValue)}</strong>
+            <small>按当前套餐定义估算</small>
+          </article>
+        </div>
+
+        <div className="tenant-card-list compact-admin-list">
+          {tenantEntitlements.map(({ tenant, entitlement }) => {
+            const videoUsageLimit = entitlement.plan.videoJobsLimit;
+            const storageLimit = entitlement.plan.storageLimitMb;
+            return (
+              <article key={tenant.id} className="tenant-card">
+                <div className="tenant-card-header">
+                  <div>
+                    <h3>{tenant.name}</h3>
+                    <span>{entitlement.plan.name} · {entitlement.plan.priceText} · 到期 {tenant.renewalDate}</span>
+                  </div>
+                  <div className={`subscription-badge ${subscriptionStatusTone(entitlement.subscriptionStatus)}`}>
+                    {subscriptionStatusLabel(entitlement.subscriptionStatus)}
+                  </div>
+                </div>
+                <div className="tenant-admin-grid">
+                  <div className="tenant-admin-block">
+                    <strong>额度消耗</strong>
+                    <div className="usage-list compact-usage">
+                      {[
+                        ["线索容量", tenant.usage.contacts, entitlement.plan.contactsLimit],
+                        ["AI执行", tenant.usage.aiRuns, entitlement.plan.aiRunsLimit],
+                        ["视频任务", tenant.usage.videoJobs, videoUsageLimit],
+                        ["资料存储", tenant.usage.storageMb, storageLimit],
+                      ].map(([label, value, limit]) => {
+                        const current = Number(value);
+                        const max = Number(limit);
+                        return (
+                          <div key={String(label)} className="usage-row">
+                            <div>
+                              <span>{label}</span>
+                              <strong>{formatNumber(current)} / {formatNumber(max)}</strong>
+                            </div>
+                            <em><i style={{ width: `${usagePercent(current, max)}%` }} /></em>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="tenant-admin-block">
+                    <strong>成交漏斗</strong>
+                    <div className="mini-funnel">
+                      {[
+                        ["线索", tenant.funnel.leads],
+                        ["加私域", tenant.funnel.addedPrivate],
+                        ["预约", tenant.funnel.bookedTrial],
+                        ["成交", tenant.funnel.paidOrders],
+                      ].map(([label, value]) => (
+                        <div key={String(label)}>
+                          <span>{label}</span>
+                          <b>{formatNumber(Number(value))}</b>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="tenant-admin-block">
+                    <strong>账单动作</strong>
+                    <div className="tag-cloud">
+                      <span className="tag ready">当前套餐：{entitlement.plan.name}</span>
+                      <span className="tag review">转化率：{getConversionRate(tenant)}</span>
+                      <span className="tag mock">席位：{tenant.usage.seats}/{entitlement.plan.seatsLimit}</span>
+                      <a className="tag ready" href="/admin/plans">调整套餐</a>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+      )}
+
+      {activeView === "templates" && (
       <section id="admin-industries" className="admin-section" aria-label="行业模板库">
         <div className="section-heading-row">
           <div>
@@ -330,7 +484,9 @@ export function AdminDashboard() {
           ))}
         </div>
       </section>
+      )}
 
+      {activeView === "readiness" && (
       <section id="admin-readiness" className="saas-panel admin-wide-panel" aria-label="SaaS 化进度">
         <div className="panel-heading compact">
           <span>SaaS 化进度</span>
@@ -346,6 +502,7 @@ export function AdminDashboard() {
           ))}
         </div>
       </section>
+      )}
     </main>
   );
 }

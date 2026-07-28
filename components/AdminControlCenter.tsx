@@ -117,7 +117,7 @@ export function AdminControlCenter({ metrics }: AdminControlCenterProps) {
           </div>
           <div className="admin-control-actions">
             <button type="button" onClick={() => setDialogOpen(true)}><Plus size={17} />开通新客户</button>
-            <Link href="/workspace">进入客户工作台<ArrowRight size={16} /></Link>
+            <Link href="/workspace/today">进入客户工作台<ArrowRight size={16} /></Link>
           </div>
         </div>
 
@@ -140,22 +140,22 @@ export function AdminControlCenter({ metrics }: AdminControlCenterProps) {
               <em>4</em>
             </div>
             <div className="admin-attention-list">
-              <a href="#admin-customers">
+              <a href="/admin/customers">
                 <span className="attention-icon danger"><CalendarClock size={18} /></span>
                 <div><strong>期货复盘训练营已到期</strong><small>暂停自动任务，等待续费或导出数据</small></div>
                 <em>今天</em>
               </a>
-              <a href="#admin-connectors">
+              <a href="/admin/connectors">
                 <span className="attention-icon warning"><Link2Off size={18} /></span>
                 <div><strong>3 个客户未完成渠道授权</strong><small>Telegram、企业微信与 YouTube 待配置</small></div>
                 <em>影响交付</em>
               </a>
-              <a href="#admin-usage">
+              <a href="/admin/usage">
                 <span className="attention-icon warning"><PackageCheck size={18} /></span>
                 <div><strong>金石交易学院视频额度接近上限</strong><small>已使用 76%，建议升级或购买加量包</small></div>
                 <em>76%</em>
               </a>
-              <a href="#admin-readiness">
+              <a href="/admin/audit">
                 <span className="attention-icon info"><ShieldCheck size={18} /></span>
                 <div><strong>2 个行业模板等待合规复核</strong><small>金融报价与医美诊疗边界需要确认</small></div>
                 <em>本周</em>
@@ -186,7 +186,7 @@ export function AdminControlCenter({ metrics }: AdminControlCenterProps) {
         <div className="admin-boundary-strip">
           <KeyRound size={17} />
           <span><strong>上线边界：</strong>当前为本地演示数据。正式环境必须接真实登录、多租户隔离、数据库、支付与操作审计。</span>
-          <a href="#admin-readiness">查看上线清单<ArrowRight size={14} /></a>
+          <a href="/admin/readiness">查看上线清单<ArrowRight size={14} /></a>
         </div>
       </section>
 

@@ -126,10 +126,10 @@ export function ProductionStatusPanel() {
     : [];
 
   return (
-    <section id="admin-production" className="production-panel" aria-label="生产依赖与商业化落地">
+    <section id="admin-connectors" className="production-panel" aria-label="连接器与生产依赖">
       <div className="model-control-heading">
         <div>
-          <div className="section-kicker">生产化落地</div>
+          <div className="section-kicker">连接器与生产依赖</div>
           <h2>服务器、连接器、账务与安全状态</h2>
           <p>这里展示能否从本地演示进入可交付 SaaS。缺凭证的外部能力会保持待配置状态。</p>
         </div>

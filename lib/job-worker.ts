@@ -29,6 +29,56 @@ function normalizePreview(text: string) {
   return text.replace(/\s+/g, " ").trim().slice(0, 600);
 }
 
+function splitKnowledgeChunks(text: string) {
+  const paragraphs = text
+    .split(/\n{2,}|(?<=。)|(?<=！)|(?<=？)/)
+    .map((item) => item.replace(/\s+/g, " ").trim())
+    .filter((item) => item.length >= 12)
+    .slice(0, 8);
+
+  return paragraphs.map((paragraph, index) => ({
+    id: `chunk-${String(index + 1).padStart(2, "0")}`,
+    title: `资料片段 ${index + 1}`,
+    text: paragraph.slice(0, 260),
+  }));
+}
+
+function extractKeywords(text: string) {
+  const stopWords = new Set([
+    "我们",
+    "客户",
+    "这个",
+    "可以",
+    "需要",
+    "进行",
+    "一个",
+    "以及",
+    "通过",
+    "如果",
+    "不是",
+    "当前",
+    "系统",
+  ]);
+  const matches = text.match(/[\u4e00-\u9fa5A-Za-z0-9]{2,12}/g) ?? [];
+  const counts = new Map<string, number>();
+
+  matches.forEach((word) => {
+    if (stopWords.has(word) || /^\d+$/.test(word)) return;
+    counts.set(word, (counts.get(word) ?? 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 10)
+    .map(([word]) => word);
+}
+
+function buildKnowledgeSummary(text: string, fileName: string) {
+  const preview = normalizePreview(text);
+  if (!preview) return `${fileName} 暂未抽取到有效文本。`;
+  return `已从《${fileName}》抽取 ${text.length.toLocaleString("zh-CN")} 个字符，可作为内容生成和回复建议的引用来源。`;
+}
+
 async function processKnowledgeJob(job: QueueJob, upload?: StoredUpload) {
   const logs = [...job.logs, "Worker 已领取知识库解析任务。"];
   const payload = { ...job.payload };
@@ -49,7 +99,14 @@ async function processKnowledgeJob(job: QueueJob, upload?: StoredUpload) {
       const raw = await readFile(resolveUploadPath(upload), "utf8");
       payload.extractedPreview = normalizePreview(raw) || "文件为空或暂未抽取到可用文本。";
       payload.indexedChunks = Math.max(1, Math.ceil(raw.length / 900));
-      logs.push("已完成基础文本抽取预览，并计算知识库切片数量。");
+      payload.knowledgePreview = {
+        sourceFile: upload.originalName,
+        summary: buildKnowledgeSummary(raw, upload.originalName),
+        keywords: extractKeywords(raw),
+        chunks: splitKnowledgeChunks(raw),
+        extractedCharacters: raw.length,
+      };
+      logs.push("已完成基础文本抽取预览、关键词识别和知识片段生成。");
     } catch (error) {
       payload.extractionError = error instanceof Error ? error.message : "未知文本抽取错误";
       logs.push("文本抽取失败，已保留文件并等待人工检查。");

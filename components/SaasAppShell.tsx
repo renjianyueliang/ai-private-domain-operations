@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   Activity,
   BarChart3,
@@ -25,9 +26,12 @@ import {
   MessageSquareText,
   Network,
   PackageCheck,
+  Radar,
   RadioTower,
   Settings2,
   ShieldCheck,
+  Sparkles,
+  Target,
   UsersRound,
   Workflow,
   X,
@@ -43,35 +47,122 @@ type NavItem = {
   badge?: string;
 };
 
+type NavSection = {
+  label: string;
+  icon: LucideIcon;
+  items: NavItem[];
+};
+
 type SaasAppShellProps = {
   mode: ShellMode;
   title: string;
   subtitle: string;
   contextTitle?: string;
   contextMeta?: string;
+  tenantId?: string;
   children: ReactNode;
 };
 
-const workspaceNavigation: NavItem[] = [
-  { label: "今日工作台", href: "#today", icon: LayoutDashboard },
-  { label: "内容工厂", href: "#foundation", icon: Factory },
-  { label: "发布与渠道", href: "#channels", icon: RadioTower },
-  { label: "客户与会话", href: "#operations", icon: Inbox },
-  { label: "AI 任务中心", href: "#commander", icon: Workflow },
-  { label: "审核中心", href: "#review", icon: ClipboardCheck, badge: "3" },
-  { label: "数据复盘", href: "#analytics", icon: BarChart3 },
+const workspaceNavigation: NavSection[] = [
+  {
+    label: "今日工作",
+    icon: LayoutDashboard,
+    items: [
+      { label: "今日待办", href: "/workspace/today", icon: CheckSquare2 },
+      { label: "AI 员工与任务", href: "/workspace/commander", icon: Workflow },
+      { label: "审核与合规", href: "/workspace/review", icon: ClipboardCheck, badge: "3" },
+    ],
+  },
+  {
+    label: "获客增长",
+    icon: Target,
+    items: [
+      { label: "获客计划向导", href: "/workspace/plan", icon: Sparkles, badge: "新" },
+      { label: "AI 获客舱", href: "/workspace/acquisition", icon: Target },
+      { label: "公域获客雷达", href: "/workspace/radar", icon: Radar },
+      { label: "账号矩阵", href: "/workspace/accounts", icon: Network },
+    ],
+  },
+  {
+    label: "内容视频",
+    icon: Factory,
+    items: [
+      { label: "知识库与素材", href: "/workspace/foundation", icon: Database },
+      { label: "视频创作中心", href: "/workspace/video", icon: FileVideo2 },
+      { label: "发布与渠道", href: "/workspace/channels", icon: RadioTower },
+    ],
+  },
+  {
+    label: "私域成交",
+    icon: Inbox,
+    items: [
+      { label: "私信聚合", href: "/workspace/inbox", icon: Inbox },
+      { label: "自动回复策略", href: "/workspace/replies", icon: MessageSquareText },
+      { label: "线索 CRM", href: "/workspace/crm", icon: UsersRound },
+      { label: "销售 SOP", href: "/workspace/sop", icon: ClipboardCheck },
+    ],
+  },
+  {
+    label: "复盘设置",
+    icon: BarChart3,
+    items: [
+      { label: "数据复盘", href: "/workspace/analytics", icon: BarChart3 },
+      { label: "资料与设置", href: "/workspace/settings", icon: Settings2 },
+    ],
+  },
 ];
 
-const adminNavigation: NavItem[] = [
-  { label: "经营总览", href: "#admin-overview", icon: Gauge },
-  { label: "客户管理", href: "#admin-customers", icon: Building2, badge: "5" },
-  { label: "套餐与订阅", href: "#admin-plans", icon: PackageCheck },
-  { label: "行业模板", href: "#admin-industries", icon: Layers3 },
-  { label: "AI 与自动化", href: "#admin-ai", icon: BrainCircuit },
-  { label: "功能与连接器", href: "#admin-production", icon: Blocks },
-  { label: "用量与账单", href: "#admin-usage", icon: Activity },
-  { label: "审计与安全", href: "#admin-readiness", icon: ShieldCheck },
+const adminNavigation: NavSection[] = [
+  {
+    label: "运营总览",
+    icon: Gauge,
+    items: [
+      { label: "经营总览", href: "/admin/overview", icon: Gauge },
+      { label: "客户管理", href: "/admin/customers", icon: Building2, badge: "5" },
+    ],
+  },
+  {
+    label: "商业授权",
+    icon: PackageCheck,
+    items: [
+      { label: "套餐与订阅", href: "/admin/plans", icon: PackageCheck },
+      { label: "用量与账单", href: "/admin/usage", icon: Activity },
+    ],
+  },
+  {
+    label: "能力配置",
+    icon: Layers3,
+    items: [
+      { label: "行业模板", href: "/admin/templates", icon: Layers3 },
+      { label: "功能权限", href: "/admin/features", icon: Blocks },
+      { label: "AI 与自动化", href: "/admin/ai", icon: BrainCircuit },
+      { label: "连接器中心", href: "/admin/connectors", icon: RadioTower },
+    ],
+  },
+  {
+    label: "安全上线",
+    icon: ShieldCheck,
+    items: [
+      { label: "风控审计", href: "/admin/audit", icon: ShieldCheck },
+      { label: "上线检查", href: "/admin/readiness", icon: CircleHelp },
+    ],
+  },
 ];
+
+function getFirstNavigationHref(navigation: NavSection[], mode: ShellMode) {
+  return navigation[0]?.items[0]?.href ?? (mode === "admin" ? "/admin/overview" : "/workspace/today");
+}
+
+function normalizePathname(pathname: string, mode: ShellMode) {
+  if (mode === "admin" && pathname === "/admin") return "/admin/overview";
+  if (mode === "workspace" && pathname === "/workspace") return "/workspace/today";
+  return pathname;
+}
+
+function withTenant(href: string, tenantId?: string) {
+  if (!tenantId || !href.startsWith("/workspace")) return href;
+  return `${href}?tenant=${encodeURIComponent(tenantId)}`;
+}
 
 export function SaasAppShell({
   mode,
@@ -79,33 +170,25 @@ export function SaasAppShell({
   subtitle,
   contextTitle,
   contextMeta,
+  tenantId,
   children,
 }: SaasAppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
   const navigation = mode === "admin" ? adminNavigation : workspaceNavigation;
-  const [activeHref, setActiveHref] = useState(navigation[0].href);
+  const activeHref = useMemo(
+    () => normalizePathname(pathname, mode),
+    [mode, pathname],
+  );
   const utilityLinks = mode === "admin"
     ? [
-        { label: "平台配置", href: "#admin-ai", icon: Settings2 },
-        { label: "上线检查", href: "#admin-production", icon: CircleHelp },
+        { label: "平台配置", href: "/admin/ai", icon: Settings2 },
+        { label: "上线检查", href: "/admin/readiness", icon: CircleHelp },
       ]
     : [
-        { label: "资料与权限", href: "#foundation", icon: Settings2 },
-        { label: "渠道实施帮助", href: "#channels", icon: CircleHelp },
+        { label: "资料与设置", href: "/workspace/settings", icon: Settings2 },
+        { label: "渠道实施帮助", href: "/workspace/channels", icon: CircleHelp },
       ];
-
-  useEffect(() => {
-    function syncHash() {
-      const nextHash = window.location.hash;
-      if (navigation.some((item) => item.href === nextHash)) {
-        setActiveHref(nextHash);
-      }
-    }
-
-    syncHash();
-    window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
-  }, [navigation]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -143,22 +226,34 @@ export function SaasAppShell({
 
         <nav className="sidebar-nav">
           <span className="sidebar-nav-label">工作区</span>
-          {navigation.map((item) => {
-            const Icon = item.icon;
+          {navigation.map((section) => {
+            const SectionIcon = section.icon;
             return (
-              <a
-                key={item.href}
-                href={item.href}
-                className={activeHref === item.href ? "active" : ""}
-                onClick={() => {
-                  setActiveHref(item.href);
-                  setMobileOpen(false);
-                }}
-              >
-                <Icon size={18} strokeWidth={2} aria-hidden="true" />
-                <span>{item.label}</span>
-                {item.badge && <em>{item.badge}</em>}
-              </a>
+              <div className="sidebar-section" key={section.label}>
+                <div className="sidebar-section-title">
+                  <SectionIcon size={15} strokeWidth={2.1} aria-hidden="true" />
+                  <span>{section.label}</span>
+                </div>
+                <div className="sidebar-subnav">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <a
+                        key={item.href}
+                        href={withTenant(item.href, tenantId)}
+                        className={activeHref === item.href ? "active" : ""}
+                        onClick={() => {
+                          setMobileOpen(false);
+                        }}
+                      >
+                        <Icon size={17} strokeWidth={2} aria-hidden="true" />
+                        <span>{item.label}</span>
+                        {item.badge && <em>{item.badge}</em>}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </nav>
@@ -167,7 +262,7 @@ export function SaasAppShell({
           {utilityLinks.map((item) => {
             const Icon = item.icon;
             return (
-              <a key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
+              <a key={item.href} href={withTenant(item.href, tenantId)} onClick={() => setMobileOpen(false)}>
                 <Icon size={18} aria-hidden="true" />
                 <span>{item.label}</span>
               </a>
@@ -199,7 +294,7 @@ export function SaasAppShell({
               <span />
               {mode === "admin" ? "平台运行中" : "账号有效"}
             </div>
-            <Link className="topbar-switch" href={mode === "admin" ? "/workspace" : "/admin"}>
+            <Link className="topbar-switch" href={mode === "admin" ? withTenant("/workspace/today", tenantId) : "/admin/overview"}>
               {mode === "admin" ? <UsersRound size={17} /> : <ShieldCheck size={17} />}
               {mode === "admin" ? "进入客户工作台" : "平台总后台"}
               <ChevronRight size={16} />
