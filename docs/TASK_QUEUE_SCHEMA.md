@@ -9,6 +9,10 @@
 - `policy.max_tasks_per_run`：必须为 `1`。
 - `policy.deployment_enabled`：当前必须为 `false`。
 - `policy.auto_selectable_risk_levels`：当前只能包含 `read_only`。
+- `policy.execution_environment`：阶段 3 必须为 `worktree`。
+- `policy.require_human_review`：必须为 `true`。
+- `policy.max_changed_files`：自动任务的最大修改文件数。
+- `policy.allowed_verification_profiles`：代码内固定验证配置白名单。
 - `tasks`：任务数组。
 
 ## 每个任务必填字段
@@ -23,5 +27,6 @@
 - `acceptance_tests`：可执行命令或明确人工验收项数组
 - `rollback_plan`：回滚说明
 - `evidence`：已获得证据数组
+- `verification_profile`：`read_only`、`docs_only` 或 `typecheck`，不得填任意命令
 
-`auto_runnable=true` 只表示控制器可选择，不能越过顶层策略。当前只有 `read_only` 任务可以被 `next` 返回，控制器不修改任何文件或任务状态。
+`auto_runnable=true` 只表示控制器可选择，不能越过顶层策略。阶段 3 只有 `read_only` 和 `low_risk_write` 可以被 `next` 返回；控制器本身不修改文件或任务状态。

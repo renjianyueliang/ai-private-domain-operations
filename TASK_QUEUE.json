@@ -1,10 +1,15 @@
 {
   "version": 1,
-  "updated_at": "2026-07-29T04:24:03+08:00",
+  "updated_at": "2026-07-29T04:44:00+08:00",
   "policy": {
+    "stage": 3,
     "max_tasks_per_run": 1,
     "deployment_enabled": false,
-    "auto_selectable_risk_levels": ["read_only"]
+    "execution_environment": "worktree",
+    "require_human_review": true,
+    "max_changed_files": 20,
+    "auto_selectable_risk_levels": ["read_only", "low_risk_write"],
+    "allowed_verification_profiles": ["read_only", "docs_only", "typecheck"]
   },
   "tasks": [
     {
@@ -15,6 +20,7 @@
       "status": "done",
       "risk_level": "read_only",
       "auto_runnable": true,
+      "verification_profile": "read_only",
       "depends_on": [],
       "allowed_paths": ["README.md", "STATUS.md", "docs/", "scripts/", "app/", "components/", "lib/"],
       "acceptance_tests": [
@@ -36,6 +42,7 @@
       "status": "approval_required",
       "risk_level": "controlled_write",
       "auto_runnable": false,
+      "verification_profile": "typecheck",
       "depends_on": ["AI-PD-001"],
       "allowed_paths": ["app/api/auth/", "app/login/", "components/LoginPanel.tsx", "lib/auth.ts", "lib/session.ts", "db/", "docs/"],
       "acceptance_tests": ["认证威胁模型经人工批准", "npm run typecheck", "新增认证与租户隔离测试全部通过"],
@@ -47,9 +54,10 @@
       "title": "隔离完整 E2E 数据",
       "objective": "让完整客户端链路测试使用独立临时数据目录，避免写入日常演示数据。",
       "priority": "P1",
-      "status": "backlog",
+      "status": "ready",
       "risk_level": "low_risk_write",
-      "auto_runnable": false,
+      "auto_runnable": true,
+      "verification_profile": "typecheck",
       "depends_on": ["AI-PD-001"],
       "allowed_paths": ["lib/", "scripts/", ".gitignore", "docs/"],
       "acceptance_tests": ["完整 E2E 通过", "默认 .local-data 内容和哈希不变", "npm run typecheck"],
@@ -64,6 +72,7 @@
       "status": "approval_required",
       "risk_level": "controlled_write",
       "auto_runnable": false,
+      "verification_profile": "docs_only",
       "depends_on": ["AI-PD-001"],
       "allowed_paths": ["docs/"],
       "acceptance_tests": ["用户研究对象与隐私方式经人工批准", "至少 5 次观察记录", "输出按影响和频次排序的结论"],
@@ -78,11 +87,32 @@
       "status": "approval_required",
       "risk_level": "high_risk",
       "auto_runnable": false,
+      "verification_profile": "typecheck",
       "depends_on": ["AI-PD-002", "AI-PD-003"],
       "allowed_paths": ["app/api/", "lib/", "docs/", ".env.example"],
       "acceptance_tests": ["平台条款与权限范围经人工批准", "测试账号完成沙盒验证", "撤销授权与审计链路通过"],
       "rollback_plan": "撤销渠道授权、关闭功能开关并恢复人工素材包流程。",
       "evidence": []
+    },
+    {
+      "id": "AI-PD-006",
+      "title": "建立第三阶段受控自动化",
+      "objective": "建立 worktree 隔离、变更路径门、固定验证配置、集成测试并更新 ai-4 自动化。",
+      "priority": "P0",
+      "status": "done",
+      "risk_level": "controlled_write",
+      "auto_runnable": false,
+      "verification_profile": "typecheck",
+      "depends_on": ["AI-PD-001"],
+      "allowed_paths": ["AGENTS.md", "README.md", "STATUS.md", "TASK_QUEUE.json", "docs/", "scripts/"],
+      "acceptance_tests": ["队列与 PowerShell 解析通过", "隔离集成测试通过", "npm run typecheck", "ai-4 为 worktree 且禁止部署"],
+      "rollback_plan": "恢复阶段 2 队列策略和 ai-4 的 local 只读提示词，移除阶段 3 脚本。",
+      "evidence": [
+        "2026-07-29: user explicitly approved Stage 3 controlled automation.",
+        "2026-07-29: PowerShell parse, queue validation, git diff check, and npm run typecheck passed.",
+        "2026-07-29: isolated integration passed allowed-path, fixed-profile, out-of-scope rejection, and primary-worktree rejection checks.",
+        "2026-07-29: ai-4 updated in place to ACTIVE worktree execution with no local environment setup script and no deploy/push/PR authority."
+      ]
     }
   ]
 }

@@ -217,7 +217,7 @@ docs/IMPLEMENTATION_STATUS_2026-07-26.md
 
 ## 安全 AI 团队开发
 
-项目已加入阶段 1–2 的 AI 团队控制层，用仓库内的事实源替代反复粘贴长对话：
+项目已加入阶段 1–3 的 AI 团队控制层，用仓库内的事实源替代反复粘贴长对话：
 
 - [产品规格](docs/PRODUCT_SPEC.md) 与 [业务闭环](docs/BUSINESS_LOOP_MAP.md)
 - [AI 团队运行方式](docs/AI_TEAM_OPERATING_MODEL.md) 与 [批准策略](docs/APPROVAL_GATE_POLICY.md)
@@ -239,7 +239,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ClientWorkflow.
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ClientWorkflow.ps1 -Mode full -AllowLocalWrites
 ```
 
-当前不会定时执行代码修改、自动合并或自动部署。隔离式低风险自动执行属于下一阶段，需要单独批准。
+第三阶段已启用受控的定时低风险自动化：现有 `ai-4` 每日任务在 Codex 管理的 linked worktree 中运行，最多选择一个 `read_only` 或 `low_risk_write` 任务。自动修改必须通过允许路径检查和固定验证配置，最终只留下待人工审查的 worktree 差异；不会自动提交、推送、创建 PR、合并或部署。
+
+阶段 3 本地安全验证：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-AITeamExecutionLoop.ps1
+```
+
+详细边界见 [第三阶段受控自动化规格](docs/STAGE_3_CONTROLLED_AUTOMATION.md)。
 
 ## 开源许可证
 
