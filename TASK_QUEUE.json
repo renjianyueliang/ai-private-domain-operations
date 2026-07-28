@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "updated_at": "2026-07-29T04:24:03+08:00",
+  "policy": {
+    "max_tasks_per_run": 1,
+    "deployment_enabled": false,
+    "auto_selectable_risk_levels": ["read_only"]
+  },
+  "tasks": [
+    {
+      "id": "AI-PD-001",
+      "title": "验证当前客户端与登录基线",
+      "objective": "只读检查项目状态、登录 API、受保护页面、关键工作台页面和只读角色权限，不修改业务文件。",
+      "priority": "P0",
+      "status": "done",
+      "risk_level": "read_only",
+      "auto_runnable": true,
+      "depends_on": [],
+      "allowed_paths": ["README.md", "STATUS.md", "docs/", "scripts/", "app/", "components/", "lib/"],
+      "acceptance_tests": [
+        "npm run typecheck",
+        "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ClientWorkflow.ps1 -Mode smoke"
+      ],
+      "rollback_plan": "只读任务，无需回滚。",
+      "evidence": [
+        "2026-07-29: npm run typecheck passed.",
+        "2026-07-29: smoke passed with 7 protected routes, 5 API reads, viewer HTTP 403, 0 external actions.",
+        "2026-07-29: local full loop passed with trace e2e-20260729-042403 and 0 external actions."
+      ]
+    },
+    {
+      "id": "AI-PD-002",
+      "title": "用真实认证替换演示用户",
+      "objective": "设计并实现注册、邀请、密码重置、会话吊销与租户成员权限。",
+      "priority": "P0",
+      "status": "approval_required",
+      "risk_level": "controlled_write",
+      "auto_runnable": false,
+      "depends_on": ["AI-PD-001"],
+      "allowed_paths": ["app/api/auth/", "app/login/", "components/LoginPanel.tsx", "lib/auth.ts", "lib/session.ts", "db/", "docs/"],
+      "acceptance_tests": ["认证威胁模型经人工批准", "npm run typecheck", "新增认证与租户隔离测试全部通过"],
+      "rollback_plan": "保留演示认证分支，通过 Git 回退本任务提交。",
+      "evidence": []
+    },
+    {
+      "id": "AI-PD-003",
+      "title": "隔离完整 E2E 数据",
+      "objective": "让完整客户端链路测试使用独立临时数据目录，避免写入日常演示数据。",
+      "priority": "P1",
+      "status": "backlog",
+      "risk_level": "low_risk_write",
+      "auto_runnable": false,
+      "depends_on": ["AI-PD-001"],
+      "allowed_paths": ["lib/", "scripts/", ".gitignore", "docs/"],
+      "acceptance_tests": ["完整 E2E 通过", "默认 .local-data 内容和哈希不变", "npm run typecheck"],
+      "rollback_plan": "移除测试数据目录配置并恢复原本地存储入口。",
+      "evidence": []
+    },
+    {
+      "id": "AI-PD-004",
+      "title": "研究新客户首次价值路径",
+      "objective": "观察非技术用户从登录到批准首条内容的路径，形成卡点、耗时和优先级报告。",
+      "priority": "P1",
+      "status": "approval_required",
+      "risk_level": "controlled_write",
+      "auto_runnable": false,
+      "depends_on": ["AI-PD-001"],
+      "allowed_paths": ["docs/"],
+      "acceptance_tests": ["用户研究对象与隐私方式经人工批准", "至少 5 次观察记录", "输出按影响和频次排序的结论"],
+      "rollback_plan": "不收集敏感数据；删除未获同意的研究记录。",
+      "evidence": []
+    },
+    {
+      "id": "AI-PD-005",
+      "title": "接入第一个真实渠道闭环",
+      "objective": "在官方授权与审计前提下选择一个渠道完成发布/消息结果回写。",
+      "priority": "P1",
+      "status": "approval_required",
+      "risk_level": "high_risk",
+      "auto_runnable": false,
+      "depends_on": ["AI-PD-002", "AI-PD-003"],
+      "allowed_paths": ["app/api/", "lib/", "docs/", ".env.example"],
+      "acceptance_tests": ["平台条款与权限范围经人工批准", "测试账号完成沙盒验证", "撤销授权与审计链路通过"],
+      "rollback_plan": "撤销渠道授权、关闭功能开关并恢复人工素材包流程。",
+      "evidence": []
+    }
+  ]
+}
