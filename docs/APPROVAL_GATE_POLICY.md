@@ -28,3 +28,11 @@
 - `AGENTS.md`、`TASK_QUEUE.json`、`STATUS.md`、批准策略和自动化配置属于控制面，自动任务不得修改。
 - 队列中的 `acceptance_tests` 不直接执行；只允许代码内固定的 `verification_profile`。
 - 自动任务的终点是待人工审查的 worktree 差异和验证报告。
+
+## 阶段 4 持续交付门
+
+- 只有 `low_risk_write` 且固定验证成功的任务可以自动完成和提交。
+- `Complete-AITeamTask.ps1` 只能将当前任务从 `ready` 改为 `done`、关闭 `auto_runnable` 并追加证据。
+- `Test-AITeamDeliverySet.ps1` 必须确认策略和其他任务未改变，才允许提交。
+- 只允许普通 push 到 `codex/ai-team-operating-system` 并更新既有草稿 PR #2；禁止 force push、自动合并和部署。
+- `controlled_write` 与 `high_risk` 不因持续开发而降级，仍然需要逐次人工批准。

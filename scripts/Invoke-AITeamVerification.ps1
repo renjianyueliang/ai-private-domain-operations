@@ -35,6 +35,46 @@ switch ($task.verification_profile) {
     if ($LASTEXITCODE -ne 0) { throw "npm run typecheck failed." }
     $checks.Add("npm_run_typecheck")
   }
+  "isolated_client_e2e" {
+    $testPath = Join-Path $workspaceRoot "scripts\Test-IsolatedClientWorkflow.ps1"
+    if (-not (Test-Path -LiteralPath $testPath -PathType Leaf)) { throw "Missing fixed test: scripts/Test-IsolatedClientWorkflow.ps1" }
+    & $testPath
+    if ($LASTEXITCODE -ne 0) { throw "Isolated client E2E failed." }
+    $checks.Add("isolated_client_e2e")
+    & npm run typecheck
+    if ($LASTEXITCODE -ne 0) { throw "npm run typecheck failed." }
+    $checks.Add("npm_run_typecheck")
+  }
+  "auth_regression" {
+    $testPath = Join-Path $workspaceRoot "scripts\Test-AuthRegression.ps1"
+    if (-not (Test-Path -LiteralPath $testPath -PathType Leaf)) { throw "Missing fixed test: scripts/Test-AuthRegression.ps1" }
+    & $testPath
+    if ($LASTEXITCODE -ne 0) { throw "Auth regression failed." }
+    $checks.Add("auth_regression")
+    & npm run typecheck
+    if ($LASTEXITCODE -ne 0) { throw "npm run typecheck failed." }
+    $checks.Add("npm_run_typecheck")
+  }
+  "review_video_regression" {
+    $testPath = Join-Path $workspaceRoot "scripts\Test-ReviewVideoRegression.ps1"
+    if (-not (Test-Path -LiteralPath $testPath -PathType Leaf)) { throw "Missing fixed test: scripts/Test-ReviewVideoRegression.ps1" }
+    & $testPath
+    if ($LASTEXITCODE -ne 0) { throw "Review/video regression failed." }
+    $checks.Add("review_video_regression")
+    & npm run typecheck
+    if ($LASTEXITCODE -ne 0) { throw "npm run typecheck failed." }
+    $checks.Add("npm_run_typecheck")
+  }
+  "publish_crm_regression" {
+    $testPath = Join-Path $workspaceRoot "scripts\Test-PublishCrmRegression.ps1"
+    if (-not (Test-Path -LiteralPath $testPath -PathType Leaf)) { throw "Missing fixed test: scripts/Test-PublishCrmRegression.ps1" }
+    & $testPath
+    if ($LASTEXITCODE -ne 0) { throw "Publish/CRM regression failed." }
+    $checks.Add("publish_crm_regression")
+    & npm run typecheck
+    if ($LASTEXITCODE -ne 0) { throw "npm run typecheck failed." }
+    $checks.Add("npm_run_typecheck")
+  }
   default { throw "Unsupported write verification profile '$($task.verification_profile)'." }
 }
 

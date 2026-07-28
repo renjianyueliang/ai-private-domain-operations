@@ -249,6 +249,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-AITeamExecution
 
 详细边界见 [第三阶段受控自动化规格](docs/STAGE_3_CONTROLLED_AUTOMATION.md)。
 
+第四阶段已把它升级为连续开发：验证成功后，受控脚本记录任务完成状态，自动提交并普通推送到现有开发分支，草稿 PR #2 会持续累积结果。远端竞争、验证失败或越界都会停止；不会 force push、自动合并或部署。详细范围见 [第四阶段持续开发规格](docs/STAGE_4_CONTINUOUS_DEVELOPMENT.md)。
+
 ## 开源许可证
 
 本项目采用 [GNU Affero General Public License v3.0](LICENSE)。如果你修改本项目并通过网络向用户提供服务，需要按该许可证向这些用户提供对应源代码。

@@ -13,6 +13,7 @@
 - `policy.require_human_review`：必须为 `true`。
 - `policy.max_changed_files`：自动任务的最大修改文件数。
 - `policy.allowed_verification_profiles`：代码内固定验证配置白名单。
+- `policy.delivery`：阶段 4 的固定分支、草稿 PR、自动提交/推送与禁止合并策略。
 - `tasks`：任务数组。
 
 ## 每个任务必填字段
@@ -30,3 +31,5 @@
 - `verification_profile`：`read_only`、`docs_only` 或 `typecheck`，不得填任意命令
 
 `auto_runnable=true` 只表示控制器可选择，不能越过顶层策略。阶段 3 只有 `read_only` 和 `low_risk_write` 可以被 `next` 返回；控制器本身不修改文件或任务状态。
+
+阶段 4 完成任务时不得直接编辑队列。`Complete-AITeamTask.ps1` 会重新验证，再把唯一当前任务从 `ready` 改为 `done`；`Test-AITeamDeliverySet.ps1` 对照提交前的 `HEAD` 检查策略和其他任务未变化。

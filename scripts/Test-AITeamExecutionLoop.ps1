@@ -19,10 +19,14 @@ try {
     version = 1
     updated_at = [DateTimeOffset]::Now.ToString("o")
     policy = @{
-      stage = 3; max_tasks_per_run = 1; deployment_enabled = $false
+      stage = 4; max_tasks_per_run = 1; deployment_enabled = $false
       execution_environment = "worktree"; require_human_review = $true; max_changed_files = 2
       auto_selectable_risk_levels = @("read_only", "low_risk_write")
       allowed_verification_profiles = @("read_only", "docs_only", "typecheck")
+      delivery = @{
+        auto_commit = $true; auto_push = $true; force_push = $false; auto_merge = $false; auto_deploy = $false
+        integration_branch = "codex/ai-team-operating-system"; draft_pr_number = 2
+      }
     }
     tasks = @(@{
       id = "FIXTURE-001"; title = "fixture"; objective = "fixture"; priority = "P0"; status = "ready"
@@ -31,13 +35,18 @@ try {
       acceptance_tests = @("fixture"); rollback_plan = "remove fixture"; evidence = @()
     })
   }
-  $queuePath = Join-Path $tempBase "TASK_QUEUE.fixture.json"
+  $queuePath = Join-Path $worktreePath "TASK_QUEUE.json"
   $queue | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $queuePath -Encoding UTF8
-  $fixturePath = Join-Path $worktreePath "docs\AUTOMATION_FIXTURE.md"
-  "# fixture" | Set-Content -LiteralPath $fixturePath -Encoding UTF8
 
   Push-Location $worktreePath
   try {
+    & git add -- TASK_QUEUE.json
+    & git -c user.name="AI Team Fixture" -c user.email="fixture@local.invalid" commit -m "test: prepare stage 4 fixture" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Fixture baseline commit failed." }
+
+    $fixturePath = Join-Path $worktreePath "docs\AUTOMATION_FIXTURE.md"
+    "# fixture" | Set-Content -LiteralPath $fixturePath -Encoding UTF8
+
     & (Join-Path $repoRoot "scripts\Test-AITeamChangeSet.ps1") -TaskId "FIXTURE-001" -QueuePath $queuePath | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Allowed-path fixture was rejected." }
     $checks.Add("linked_worktree_allowed_path")
@@ -53,6 +62,19 @@ try {
     } catch { $rejected = $true }
     if (-not $rejected) { throw "Out-of-scope fixture was not rejected." }
     $checks.Add("out_of_scope_rejected")
+    Remove-Item -LiteralPath (Join-Path $worktreePath "OUTSIDE.txt") -Force
+
+    & (Join-Path $repoRoot "scripts\Complete-AITeamTask.ps1") -TaskId "FIXTURE-001" -QueuePath $queuePath -Evidence "fixture completion passed" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Controlled completion fixture failed." }
+    $completedQueue = Get-Content -LiteralPath $queuePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($completedQueue.tasks[0].status -ne "done" -or $completedQueue.tasks[0].auto_runnable -ne $false) {
+      throw "Controlled completion did not produce the expected task state."
+    }
+    $checks.Add("controlled_ready_to_done")
+
+    & (Join-Path $repoRoot "scripts\Test-AITeamDeliverySet.ps1") -TaskId "FIXTURE-001" -QueuePath $queuePath -BaseRef "HEAD" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Final delivery-set fixture failed." }
+    $checks.Add("final_delivery_set")
   } finally {
     Pop-Location
   }

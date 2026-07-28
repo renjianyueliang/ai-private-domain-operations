@@ -31,7 +31,9 @@ if ($task.status -ne "ready" -or -not $task.auto_runnable -or $task.risk_level -
 $controlPaths = @(
   "AGENTS.md", "STATUS.md", "TASK_QUEUE.json", "docs/APPROVAL_GATE_POLICY.md",
   "scripts/Invoke-AITeamController.ps1", "scripts/Test-AITeamChangeSet.ps1",
-  "scripts/Invoke-AITeamVerification.ps1", ".github/workflows/"
+  "scripts/Invoke-AITeamVerification.ps1", "scripts/Complete-AITeamTask.ps1",
+  "scripts/Test-AITeamDeliverySet.ps1", "scripts/Test-AITeamExecutionLoop.ps1",
+  ".github/workflows/"
 )
 
 $entries = @(& git status --porcelain=v1 -uall)
