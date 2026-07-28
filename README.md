@@ -1,4 +1,11 @@
-# AI 私域 SaaS 指挥官 MVP
+# AI 私域 SaaS 指挥官
+
+[![CI](https://github.com/renjianyueliang/ai-private-domain-operations/actions/workflows/ci.yml/badge.svg)](https://github.com/renjianyueliang/ai-private-domain-operations/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+
+一个面向私域运营团队的开源 AI 员工工作台，覆盖“目标拆解 → 内容草稿 → 人工审核 → 视频/发布计划 → 会话承接 → CRM 跟进 → 运营复盘”的可追踪闭环。
+
+> 项目处于 `v0.1.0` 早期验证阶段。目前默认使用本地 mock 和本地数据，真实外部发布、私信、支付及高风险决策均保留授权和人工确认边界。
 
 这是本地演示版 SaaS 系统：客户进入自己的工作台，上传行业知识库后，由 AI 指挥官调度多个 AI 员工，完成内容生成、视频适配、发布计划、评论/私信承接、私域销售辅助、合规审核和数据复盘。
 
@@ -6,8 +13,11 @@
 
 ```powershell
 npm install
+npm run typecheck
 npm run dev
 ```
+
+建议使用 Node.js 20 或更高版本。复制 `.env.example` 为 `.env.local` 即可按需配置；不填写外部服务密钥也能运行本地演示流程。
 
 默认访问：
 
@@ -194,3 +204,17 @@ docs/IMPLEMENTATION_STATUS_2026-07-26.md
 - 医美：不承诺效果，不夸大前后对比，不自动给医疗方案。
 - 中医：不做远程诊断，不承诺包治根治，不替代正规就医。
 - 所有行业：不使用个人号外挂，不模拟点击，不绕过平台风控。
+
+## 路线图与参与贡献
+
+- [路线图](ROADMAP.md)：近期里程碑、验收标准和明确非目标。
+- [贡献指南](CONTRIBUTING.md)：开发流程、提交要求和首个贡献入口。
+- [治理方式](GOVERNANCE.md)：维护者职责与决策方式。
+- [安全策略](SECURITY.md)：漏洞私密报告与支持范围。
+- [变更记录](CHANGELOG.md)：版本演进记录。
+
+欢迎通过 GitHub Issues 提交真实使用场景、缺陷和小范围改进建议。我们尤其希望获得“从内容草稿到人工确认再到 CRM 跟进”闭环的可复现实测反馈。
+
+## 开源许可证
+
+本项目采用 [GNU Affero General Public License v3.0](LICENSE)。如果你修改本项目并通过网络向用户提供服务，需要按该许可证向这些用户提供对应源代码。

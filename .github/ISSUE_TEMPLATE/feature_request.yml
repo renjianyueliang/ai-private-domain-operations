@@ -1,0 +1,22 @@
+name: 功能建议
+description: 从真实用户场景提出可验收的小步改进
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: user
+    attributes:
+      label: 用户与场景
+      description: 谁在什么情况下遇到什么阻力？
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 期望结果与验收方式
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: 风险与人工确认边界
