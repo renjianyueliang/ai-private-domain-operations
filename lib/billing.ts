@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { canManagePlatform, type DemoUser } from "./auth";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
+import { getLocalDataRoot } from "./local-data-path";
 
 export type BillingRecordKind = "contract" | "invoice" | "payment";
 export type BillingRecordStatus = "draft" | "issued" | "paid" | "void";
@@ -29,7 +30,7 @@ type BillingSnapshot = {
 };
 
 function billingPath() {
-  return path.join(process.cwd(), ".local-data", "billing.json");
+  return path.join(getLocalDataRoot(), "billing.json");
 }
 
 async function readLocalBilling(): Promise<BillingSnapshot> {

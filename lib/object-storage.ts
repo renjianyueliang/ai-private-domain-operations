@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { getLocalDataRoot } from "./local-data-path";
 
 export type StorageBackend = "local" | "s3-compatible";
 
@@ -35,7 +36,7 @@ export function getObjectStorageStatus() {
 }
 
 function localDataRoot() {
-  return path.join(process.cwd(), ".local-data");
+  return getLocalDataRoot();
 }
 
 export async function saveObject(key: string, file: File): Promise<StoredObject> {

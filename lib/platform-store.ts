@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { canManagePlatform, type DemoUser } from "./auth";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
+import { getLocalDataRoot } from "./local-data-path";
 
 export type TenantDraftInput = {
   company: string;
@@ -25,7 +26,7 @@ type PlatformSnapshot = {
 };
 
 function platformPath() {
-  return path.join(process.cwd(), ".local-data", "platform.json");
+  return path.join(getLocalDataRoot(), "platform.json");
 }
 
 async function readLocalPlatformSnapshot(): Promise<PlatformSnapshot> {
