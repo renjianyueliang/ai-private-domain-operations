@@ -1,6 +1,6 @@
 ﻿{
     "version":  1,
-    "updated_at":  "2026-08-01T10:13:31.2903832+08:00",
+    "updated_at":  "2026-08-01T13:04:45.4433330+08:00",
     "policy":  {
                    "stage":  4,
                    "max_tasks_per_run":  1,
@@ -216,9 +216,9 @@
                       "title":  "增强登录与角色权限回归",
                       "objective":  "补齐平台管理员、客户管理员、运营员工和只读观察员的登录、路由访问与写权限回归。",
                       "priority":  "P1",
-                      "status":  "ready",
+                      "status":  "done",
                       "risk_level":  "low_risk_write",
-                      "auto_runnable":  true,
+                      "auto_runnable":  false,
                       "verification_profile":  "auth_regression",
                       "depends_on":  [
                                          "AI-PD-003"
@@ -234,7 +234,7 @@
                                            ],
                       "rollback_plan":  "移除新增回归脚本和说明，不改变现有认证实现。",
                       "evidence":  [
-
+                                       "2026-08-01T13:04:45.4433330+08:00: Fixed verification profile passed."
                                    ]
                   },
                   {
