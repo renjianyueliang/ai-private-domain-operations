@@ -1,6 +1,6 @@
 ﻿{
     "version":  1,
-    "updated_at":  "2026-08-01T13:04:45.4433330+08:00",
+    "updated_at":  "2026-08-02T03:05:24.4738294+08:00",
     "policy":  {
                    "stage":  4,
                    "max_tasks_per_run":  1,
@@ -242,9 +242,9 @@
                       "title":  "固化新客户首次价值验收清单",
                       "objective":  "把登录、建立计划、生成首条内容和人工批准的首次价值路径形成可执行产品验收清单。",
                       "priority":  "P1",
-                      "status":  "ready",
+                      "status":  "done",
                       "risk_level":  "low_risk_write",
-                      "auto_runnable":  true,
+                      "auto_runnable":  false,
                       "verification_profile":  "docs_only",
                       "depends_on":  [
                                          "AI-PD-007"
@@ -258,7 +258,7 @@
                                            ],
                       "rollback_plan":  "删除本任务新增的产品验收文档。",
                       "evidence":  [
-
+                                       "2026-08-02T03:05:24.4738294+08:00: docs_only passed; added FIRST_VALUE_ACCEPTANCE_CHECKLIST.md with steps, success signals, failure recovery, human boundaries, synthetic-data limits, and external actions 0."
                                    ]
                   },
                   {
