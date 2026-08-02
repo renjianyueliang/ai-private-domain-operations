@@ -19,6 +19,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { ClientLoopProgress } from "./ClientLoopProgress";
 
 type TodayWorkspaceProps = {
   tenantName: string;
@@ -269,6 +270,8 @@ export function TodayWorkspace({
             处理 3 项待办
           </a>
         </div>
+
+        {tenantId && <ClientLoopProgress tenantId={tenantId} />}
 
         <div className="today-metrics" aria-label="今日关键指标">
           <article>

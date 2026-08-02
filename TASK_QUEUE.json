@@ -1,6 +1,6 @@
 ﻿{
     "version":  1,
-    "updated_at":  "2026-08-02T03:05:24.4738294+08:00",
+    "updated_at":  "2026-08-02T22:05:04.1248424+08:00",
     "policy":  {
                    "stage":  4,
                    "max_tasks_per_run":  1,
@@ -266,9 +266,9 @@
                       "title":  "改善工作台首次价值引导",
                       "objective":  "根据验收清单，在现有工作台加入一个最小、可回滚的下一步引导和状态提示。",
                       "priority":  "P1",
-                      "status":  "ready",
+                      "status":  "done",
                       "risk_level":  "low_risk_write",
-                      "auto_runnable":  true,
+                      "auto_runnable":  false,
                       "verification_profile":  "typecheck",
                       "depends_on":  [
                                          "AI-PD-008"
@@ -285,7 +285,7 @@
                                            ],
                       "rollback_plan":  "回退本任务 UI 提示组件和文档。",
                       "evidence":  [
-
+                                       "2026-08-02T22:05:04.1248424+08:00: First-value guide now shows one state-aware next action on the Today workspace; rejected drafts return to plan revision; typecheck and change-set gates passed."
                                    ]
                   },
                   {
