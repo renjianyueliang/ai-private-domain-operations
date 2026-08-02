@@ -1,6 +1,6 @@
 ﻿{
     "version":  1,
-    "updated_at":  "2026-08-02T22:05:04.1248424+08:00",
+    "updated_at":  "2026-08-03T02:10:29.4329319+08:00",
     "policy":  {
                    "stage":  4,
                    "max_tasks_per_run":  1,
@@ -293,9 +293,9 @@
                       "title":  "补齐审核到视频任务幂等回归",
                       "objective":  "验证重复审核和重复生成视频任务不会产生重复业务记录或越权写入。",
                       "priority":  "P1",
-                      "status":  "ready",
+                      "status":  "done",
                       "risk_level":  "low_risk_write",
-                      "auto_runnable":  true,
+                      "auto_runnable":  false,
                       "verification_profile":  "review_video_regression",
                       "depends_on":  [
                                          "AI-PD-009"
@@ -312,7 +312,7 @@
                                            ],
                       "rollback_plan":  "移除新增回归脚本；如有最小幂等修复则回退对应提交。",
                       "evidence":  [
-
+                                       "2026-08-03T02:10:29.4329319+08:00: Review-to-video regression passed: 15 checks, repeated approval same draft, repeated generation same video job, viewer writes blocked with 403, typecheck passed, external actions 0."
                                    ]
                   },
                   {
