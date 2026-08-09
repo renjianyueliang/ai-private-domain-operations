@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "team_id": "private-domain-codex-dev-opc",
+  "team_name": "私域 SaaS Codex 持续开发 OPC 团队",
+  "project_root": ".",
+  "control_plane_root": "D:\\AI工厂总控",
+  "autonomy_stage": "controlled_candidate_development",
+  "max_tasks_per_cycle": 1,
+  "primary_task_queue": "TASK_QUEUE.json",
+  "primary_controller": "scripts/Invoke-AITeamController.ps1",
+  "roles": [
+    {
+      "id": "product-lead",
+      "config": ".codex/agents/product_lead.toml",
+      "mode": "coordinator",
+      "responsibility": "维护产品范围、用户价值、验收标准并汇总候选交付"
+    },
+    {
+      "id": "architecture-developer",
+      "config": ".codex/agents/architecture_developer.toml",
+      "mode": "controlled_write",
+      "responsibility": "仅在控制器选中任务和 allowed_paths 内完成最小可回滚实现"
+    },
+    {
+      "id": "qa-test-agent",
+      "config": ".codex/agents/qa_test_agent.toml",
+      "mode": "read_only",
+      "responsibility": "运行固定验证并区分类型检查、回归与业务验收"
+    },
+    {
+      "id": "security-compliance-agent",
+      "config": ".codex/agents/security_compliance_agent.toml",
+      "mode": "risk_gate",
+      "responsibility": "审查租户、隐私、平台、高风险内容和外部动作边界"
+    },
+    {
+      "id": "operations-researcher",
+      "config": ".codex/agents/operations_researcher.toml",
+      "mode": "read_only",
+      "responsibility": "从本地证据形成运营假设和候选任务，不接触真实客户"
+    },
+    {
+      "id": "task-controller",
+      "config": ".codex/agents/task_controller.toml",
+      "mode": "read_only",
+      "responsibility": "校验事实源并委托原控制器单次选择最多一个任务，不执行任务"
+    }
+  ],
+  "mandatory_project_files": [
+    "AGENTS.md",
+    "README.md",
+    "docs/PRODUCT_SPEC.md",
+    "docs/BUSINESS_LOOP_MAP.md",
+    "docs/APPROVAL_GATE_POLICY.md",
+    "STATUS.md",
+    "TASK_QUEUE.json",
+    "package.json",
+    "agents/opc-dev-team/PROJECT_MEMORY.md",
+    "agents/opc-dev-team/TASK_QUEUE.json",
+    "agents/opc-dev-team/RUNBOOK.md",
+    "agents/opc-dev-team/TEAM_DASHBOARD.md",
+    "automations/opc/Invoke-PrivateDomainDevOpc.ps1",
+    "scripts/Test-PrivateDomainDevOpc.ps1"
+  ],
+  "frozen_control_paths": [
+    "AGENTS.md",
+    "TASK_QUEUE.json",
+    "STATUS.md",
+    "docs/APPROVAL_GATE_POLICY.md",
+    "scripts/Invoke-AITeamController.ps1",
+    "scripts/Test-AITeamChangeSet.ps1",
+    "scripts/Invoke-AITeamVerification.ps1",
+    "scripts/Complete-AITeamTask.ps1",
+    "scripts/Test-AITeamDeliverySet.ps1"
+  ],
+  "source_change_gates": {
+    "git_repository_required": true,
+    "clean_start_required": true,
+    "codex_branch_required": true,
+    "isolated_worktree_required": true,
+    "primary_validate_before_next": true,
+    "explicit_allowed_paths_required": true,
+    "fixed_verification_required": true,
+    "human_review_required": true,
+    "rollback_required": true
+  },
+  "candidate_delivery": {
+    "local_candidate_commit": true,
+    "ordinary_push_existing_integration_branch": true,
+    "existing_draft_pr_only": true,
+    "force_push": false,
+    "auto_merge": false,
+    "auto_deploy": false
+  },
+  "hard_boundaries": {
+    "deployment": false,
+    "process_control": false,
+    "real_customer_contact": false,
+    "real_marketing_account_login": false,
+    "real_channel_publish": false,
+    "real_message_send": false,
+    "real_crm_write": false,
+    "customer_data_access": false,
+    "credential_changes": false,
+    "payments": false,
+    "destructive_data_changes": false,
+    "new_pull_request": false,
+    "force_push": false,
+    "auto_merge": false
+  }
+}
