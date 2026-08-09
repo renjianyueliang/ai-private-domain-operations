@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "team_id": "private-domain-codex-dev-opc",
   "team_name": "私域 SaaS Codex 持续开发 OPC 团队",
   "project_root": ".",
   "control_plane_root": "D:\\AI工厂总控",
-  "autonomy_stage": "controlled_candidate_development",
+  "autonomy_stage": "evidence_driven_candidate_development",
   "max_tasks_per_cycle": 1,
   "primary_task_queue": "TASK_QUEUE.json",
   "primary_controller": "scripts/Invoke-AITeamController.ps1",
@@ -57,10 +57,16 @@
     "package.json",
     "agents/opc-dev-team/PROJECT_MEMORY.md",
     "agents/opc-dev-team/TASK_QUEUE.json",
+    "agents/opc-dev-team/INTAKE_QUEUE.json",
+    "agents/opc-dev-team/QUALITY_GATES.json",
+    "agents/opc-dev-team/EVIDENCE_CONTRACT.json",
+    "agents/opc-dev-team/MATURITY_SCORECARD.json",
+    "agents/opc-dev-team/HANDOFF_CONTRACT.md",
     "agents/opc-dev-team/RUNBOOK.md",
     "agents/opc-dev-team/TEAM_DASHBOARD.md",
     "automations/opc/Invoke-PrivateDomainDevOpc.ps1",
-    "scripts/Test-PrivateDomainDevOpc.ps1"
+    "scripts/Test-PrivateDomainDevOpc.ps1",
+    "scripts/Test-PrivateDomainDevEnvironment.ps1"
   ],
   "frozen_control_paths": [
     "AGENTS.md",
@@ -83,6 +89,18 @@
     "fixed_verification_required": true,
     "human_review_required": true,
     "rollback_required": true
+  },
+  "operating_capabilities": {
+    "formal_intake": true,
+    "duplicate_detection": true,
+    "fixed_quality_gates": true,
+    "evidence_contract": true,
+    "environment_readiness_gate": true,
+    "handoff_contract": true,
+    "team_metrics": true,
+    "maturity_scorecard": true,
+    "automatic_intake_promotion": false,
+    "self_authorized_policy_change": false
   },
   "candidate_delivery": {
     "local_candidate_commit": true,

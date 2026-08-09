@@ -35,3 +35,15 @@
 - 运行手册：`agents/opc-dev-team/RUNBOOK.md`
 - 团队控制器：`automations/opc/Invoke-PrivateDomainDevOpc.ps1`
 - 固定回归：`scripts/Test-PrivateDomainDevOpc.ps1`
+- 正式 intake：`agents/opc-dev-team/INTAKE_QUEUE.json`
+- 质量门：`agents/opc-dev-team/QUALITY_GATES.json`
+- 证据契约：`agents/opc-dev-team/EVIDENCE_CONTRACT.json`
+- 成熟度：`agents/opc-dev-team/MATURITY_SCORECARD.json`
+- 交接契约：`agents/opc-dev-team/HANDOFF_CONTRACT.md`
+
+## V2 运行能力
+
+- `intake`：校验请求字段、状态、风险、去重键和外部动作，不自动晋升根队列。
+- `readiness`：核对 Git、linked worktree、分支、Node/npm 和本 worktree 依赖。
+- `metrics`：输出业务队列、治理队列、intake、成熟度、环境和硬边界指标。
+- `next`：只有 Git 与依赖环境都就绪时，才允许低风险写任务进入 selected。

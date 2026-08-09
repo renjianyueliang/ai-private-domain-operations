@@ -13,6 +13,9 @@
 5. `STATUS.md`
 6. `TASK_QUEUE.json`
 7. 当前任务的 request、allowed_paths、acceptance 和 rollback
+8. `agents/opc-dev-team/INTAKE_QUEUE.json`
+9. `agents/opc-dev-team/QUALITY_GATES.json`
+10. `agents/opc-dev-team/EVIDENCE_CONTRACT.json`
 
 ## 团队边界
 
@@ -28,3 +31,5 @@
 - 正式团队包创建于 2026-08-09。
 - 原 AI Team Controller、根任务队列和阶段 4 交付门继续作为执行权威；本团队不复制其业务状态机。
 - 团队控制器只做校验、展示和委托选择，不执行任务、不改变状态。
+- V2 增加 intake 去重与分级、固定质量门、证据契约、依赖环境就绪门、角色交接、成熟度和 metrics；任何 intake 都不能自动晋升根业务队列。
+- 写任务除了 Git/worktree/分支门，还必须通过环境就绪检查；缺少本 worktree 的依赖时保持 blocked。

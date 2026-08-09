@@ -1,0 +1,8 @@
+{
+  "id": "PD-DEV-OPC-002",
+  "request": "把当前正式 Codex 持续开发 OPC 团队迭代到优秀团队能力模型。",
+  "authorized_by": "user",
+  "authorized_at": "2026-08-09T14:27:35+08:00",
+  "scope": "新增 intake、质量门、证据契约、环境就绪、指标、成熟度和角色交接能力；不执行根业务队列任务。",
+  "status": "done"
+}

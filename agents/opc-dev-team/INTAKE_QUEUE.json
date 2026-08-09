@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-09T14:27:35+08:00",
+  "policy": {
+    "candidate_only": true,
+    "automatic_promotion": false,
+    "deduplicate_by": "dedupe_key",
+    "allowed_statuses": ["suggested", "triaged", "approved_governance", "rejected"],
+    "allowed_risk_levels": ["read_only", "low_risk_write", "controlled_write", "high_risk"],
+    "customer_data_allowed": false,
+    "external_actions_allowed": false
+  },
+  "requests": [
+    {
+      "id": "PD-INTAKE-001",
+      "dedupe_key": "opc-team-evidence-driven-v2",
+      "title": "将 Codex OPC 团队升级为证据驱动 V2",
+      "source": "user",
+      "status": "approved_governance",
+      "risk_level": "controlled_write",
+      "business_outcome": "让团队具备正式 intake、质量、证据、指标、交接和安全停止能力。",
+      "proposed_scope": "仅修改 OPC 团队包及其固定验证，不修改业务代码和根控制面。",
+      "external_actions": false,
+      "customer_data": false,
+      "promotion_target": null
+    }
+  ]
+}

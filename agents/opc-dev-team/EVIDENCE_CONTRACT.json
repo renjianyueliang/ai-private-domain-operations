@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "contract_id": "private-domain-opc-cycle-evidence-v1",
+  "required_fields": [
+    "cycle_id",
+    "team_id",
+    "task_id",
+    "request_source",
+    "started_at",
+    "completed_at",
+    "base_head",
+    "candidate_head",
+    "branch",
+    "worktree",
+    "files_changed",
+    "verification",
+    "security_review",
+    "external_actions",
+    "risks",
+    "rollback",
+    "status"
+  ],
+  "completion_rules": {
+    "candidate_head_required_for_candidate_ready": true,
+    "verification_passed_required": true,
+    "security_review_passed_required": true,
+    "external_actions_must_equal_zero": true,
+    "rollback_must_not_be_blank": true,
+    "unknown_status_forbidden": true
+  },
+  "allowed_statuses": ["blocked", "candidate_ready", "rejected", "done"],
+  "template": {
+    "cycle_id": "<timestamped-cycle-id>",
+    "team_id": "private-domain-codex-dev-opc",
+    "task_id": "<task-id>",
+    "request_source": "root-task-queue-or-user-approved-governance",
+    "started_at": "<iso-8601>",
+    "completed_at": "<iso-8601>",
+    "base_head": "<40-char-git-hash>",
+    "candidate_head": "<40-char-git-hash-or-null-when-blocked>",
+    "branch": "codex/<branch>",
+    "worktree": "<absolute-ascii-path>",
+    "files_changed": [],
+    "verification": [],
+    "security_review": { "passed": false, "notes": [] },
+    "external_actions": 0,
+    "risks": [],
+    "rollback": "<explicit-rollback>",
+    "status": "blocked"
+  }
+}

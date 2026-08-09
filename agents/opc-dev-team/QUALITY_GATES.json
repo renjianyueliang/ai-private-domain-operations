@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "arbitrary_commands_from_queue": false,
+  "gates": [
+    { "id": "fact-source", "owner": "product-lead", "evidence": "required files and current Git facts read" },
+    { "id": "change-boundary", "owner": "task-controller", "evidence": "all changed paths inside selected allowlist" },
+    { "id": "fixed-verification", "owner": "qa-test-agent", "evidence": "repository-owned verification profile passed" },
+    { "id": "security-review", "owner": "security-compliance-agent", "evidence": "hard boundaries false and external actions zero" },
+    { "id": "candidate-integrity", "owner": "architecture-developer", "evidence": "clean candidate commit, diff check and rollback recorded" },
+    { "id": "human-review", "owner": "product-lead", "evidence": "candidate awaiting or received explicit human decision" }
+  ],
+  "profiles": [
+    {
+      "id": "opc_governance_v2",
+      "required_gates": ["fact-source", "change-boundary", "fixed-verification", "security-review", "candidate-integrity", "human-review"],
+      "fixed_scripts": ["scripts/Test-PrivateDomainDevOpc.ps1", "scripts/Test-PrivateDomainDevEnvironment.ps1"],
+      "requires_typecheck": true,
+      "requires_external_actions_zero": true
+    }
+  ]
+}
