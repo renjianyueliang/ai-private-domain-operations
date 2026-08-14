@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { canAccessTenant, canWriteTenantData, type DemoUser } from "./auth";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
+import { getLocalDataRoot } from "./local-data-path";
 import { listKnowledgeSources, type KnowledgeSource } from "./local-store";
 import { findTenantById } from "./saas";
 
@@ -42,7 +43,7 @@ type ContentDraftSnapshot = {
 };
 
 function contentPath() {
-  return path.join(process.cwd(), ".local-data", "content-drafts.json");
+  return path.join(getLocalDataRoot(), "content-drafts.json");
 }
 
 async function readLocalContentDrafts(): Promise<ContentDraftSnapshot> {

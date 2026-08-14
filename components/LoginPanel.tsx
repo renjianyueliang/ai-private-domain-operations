@@ -59,7 +59,12 @@ export function LoginPanel({ nextPath }: LoginPanelProps) {
           </div>
         </div>
 
-        <form className="login-form" onSubmit={submitLogin}>
+        <form
+          className="login-form"
+          action={`/api/auth/login?next=${encodeURIComponent(nextPath || "/workspace")}`}
+          method="post"
+          onSubmit={submitLogin}
+        >
           <div className="login-form-heading">
             <LockKeyhole size={22} />
             <div>
@@ -70,7 +75,11 @@ export function LoginPanel({ nextPath }: LoginPanelProps) {
 
           <label>
             账号角色
-            <select value={selectedUserId} onChange={(event) => setSelectedUserId(event.target.value)}>
+            <select
+              name="userId"
+              value={selectedUserId}
+              onChange={(event) => setSelectedUserId(event.target.value)}
+            >
               {demoUsers.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name} · {roleLabels[user.role]}
@@ -82,6 +91,7 @@ export function LoginPanel({ nextPath }: LoginPanelProps) {
           <label>
             登录验证码
             <input
+              name="loginCode"
               value={loginCode}
               onChange={(event) => setLoginCode(event.target.value)}
               placeholder="未配置 SAAS_LOGIN_CODE 时可留空"

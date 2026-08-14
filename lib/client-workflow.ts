@@ -4,6 +4,7 @@ import path from "path";
 import { canAccessTenant, canWriteTenantData, type DemoUser } from "./auth";
 import { getContentDraftById, type ContentDraftRecord } from "./content-drafts";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
+import { getLocalDataRoot } from "./local-data-path";
 import { findTenantById } from "./saas";
 
 export type WorkflowVideoStage = "脚本" | "剪辑" | "字幕" | "审核" | "待发布";
@@ -69,7 +70,7 @@ const emptySnapshot: ClientWorkflowSnapshot = {
 };
 
 function workflowPath() {
-  return path.join(process.cwd(), ".local-data", "client-workflow.json");
+  return path.join(getLocalDataRoot(), "client-workflow.json");
 }
 
 async function readLocalWorkflow(): Promise<ClientWorkflowSnapshot> {

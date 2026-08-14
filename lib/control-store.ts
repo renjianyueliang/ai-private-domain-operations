@@ -9,6 +9,7 @@ import {
 } from "./auth";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
 import { featureLabels, getTenantEntitlement, type FeatureKey } from "./entitlements";
+import { getLocalDataRoot } from "./local-data-path";
 import { findTenantById, saasTenants } from "./saas";
 import { getReplyRulesForTenant, type ReplyRule } from "./workspace-product";
 
@@ -76,7 +77,7 @@ const emptyControlSnapshot: ControlSnapshot = {
 };
 
 function controlPath() {
-  return path.join(process.cwd(), ".local-data", "control.json");
+  return path.join(getLocalDataRoot(), "control.json");
 }
 
 async function readLocalControl(): Promise<ControlSnapshot> {

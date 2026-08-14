@@ -1,0 +1,380 @@
+﻿{
+    "version":  1,
+    "updated_at":  "2026-08-15T06:33:25.2993906+08:00",
+    "policy":  {
+                   "stage":  4,
+                   "max_tasks_per_run":  1,
+                   "deployment_enabled":  false,
+                   "execution_environment":  "worktree",
+                   "require_human_review":  true,
+                   "max_changed_files":  20,
+                   "auto_selectable_risk_levels":  [
+                                                       "read_only",
+                                                       "low_risk_write"
+                                                   ],
+                   "allowed_verification_profiles":  [
+                                                         "read_only",
+                                                         "docs_only",
+                                                         "typecheck",
+                                                         "isolated_client_e2e",
+                                                         "auth_regression",
+                                                         "review_video_regression",
+                                                         "publish_crm_regression"
+                                                     ],
+                   "delivery":  {
+                                    "auto_commit":  true,
+                                    "auto_push":  true,
+                                    "force_push":  false,
+                                    "auto_merge":  false,
+                                    "auto_deploy":  false,
+                                    "integration_branch":  "codex/ai-team-operating-system",
+                                    "draft_pr_number":  2
+                                }
+               },
+    "tasks":  [
+                  {
+                      "id":  "AI-PD-001",
+                      "title":  "验证当前客户端与登录基线",
+                      "objective":  "只读检查项目状态、登录 API、受保护页面、关键工作台页面和只读角色权限，不修改业务文件。",
+                      "priority":  "P0",
+                      "status":  "done",
+                      "risk_level":  "read_only",
+                      "auto_runnable":  true,
+                      "verification_profile":  "read_only",
+                      "depends_on":  [
+
+                                     ],
+                      "allowed_paths":  [
+                                            "README.md",
+                                            "STATUS.md",
+                                            "docs/",
+                                            "scripts/",
+                                            "app/",
+                                            "components/",
+                                            "lib/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "npm run typecheck",
+                                               "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ClientWorkflow.ps1 -Mode smoke"
+                                           ],
+                      "rollback_plan":  "只读任务，无需回滚。",
+                      "evidence":  [
+                                       "2026-07-29: npm run typecheck passed.",
+                                       "2026-07-29: smoke passed with 7 protected routes, 5 API reads, viewer HTTP 403, 0 external actions.",
+                                       "2026-07-29: local full loop passed with trace e2e-20260729-042403 and 0 external actions."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-002",
+                      "title":  "用真实认证替换演示用户",
+                      "objective":  "设计并实现注册、邀请、密码重置、会话吊销与租户成员权限。",
+                      "priority":  "P0",
+                      "status":  "approval_required",
+                      "risk_level":  "controlled_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "typecheck",
+                      "depends_on":  [
+                                         "AI-PD-001"
+                                     ],
+                      "allowed_paths":  [
+                                            "app/api/auth/",
+                                            "app/login/",
+                                            "components/LoginPanel.tsx",
+                                            "lib/auth.ts",
+                                            "lib/session.ts",
+                                            "db/",
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "认证威胁模型经人工批准",
+                                               "npm run typecheck",
+                                               "新增认证与租户隔离测试全部通过"
+                                           ],
+                      "rollback_plan":  "保留演示认证分支，通过 Git 回退本任务提交。",
+                      "evidence":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-003",
+                      "title":  "隔离完整 E2E 数据",
+                      "objective":  "让完整客户端链路测试使用独立临时数据目录，避免写入日常演示数据。",
+                      "priority":  "P1",
+                      "status":  "done",
+                      "risk_level":  "low_risk_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "isolated_client_e2e",
+                      "depends_on":  [
+                                         "AI-PD-001"
+                                     ],
+                      "allowed_paths":  [
+                                            "lib/",
+                                            "scripts/",
+                                            ".gitignore",
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "完整 E2E 通过",
+                                               "默认 .local-data 内容和哈希不变",
+                                               "npm run typecheck"
+                                           ],
+                      "rollback_plan":  "移除测试数据目录配置并恢复原本地存储入口。",
+                      "evidence":  [
+                                       "2026-08-01T10:13:31.2903832+08:00: isolated_client_e2e passed with isolated temporary data, unchanged default .local-data, external actions 0, and npm run typecheck passed."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-004",
+                      "title":  "研究新客户首次价值路径",
+                      "objective":  "观察非技术用户从登录到批准首条内容的路径，形成卡点、耗时和优先级报告。",
+                      "priority":  "P1",
+                      "status":  "approval_required",
+                      "risk_level":  "controlled_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "docs_only",
+                      "depends_on":  [
+                                         "AI-PD-001"
+                                     ],
+                      "allowed_paths":  [
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "用户研究对象与隐私方式经人工批准",
+                                               "至少 5 次观察记录",
+                                               "输出按影响和频次排序的结论"
+                                           ],
+                      "rollback_plan":  "不收集敏感数据；删除未获同意的研究记录。",
+                      "evidence":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-005",
+                      "title":  "接入第一个真实渠道闭环",
+                      "objective":  "在官方授权与审计前提下选择一个渠道完成发布/消息结果回写。",
+                      "priority":  "P1",
+                      "status":  "approval_required",
+                      "risk_level":  "high_risk",
+                      "auto_runnable":  false,
+                      "verification_profile":  "typecheck",
+                      "depends_on":  [
+                                         "AI-PD-002",
+                                         "AI-PD-003"
+                                     ],
+                      "allowed_paths":  [
+                                            "app/api/",
+                                            "lib/",
+                                            "docs/",
+                                            ".env.example"
+                                        ],
+                      "acceptance_tests":  [
+                                               "平台条款与权限范围经人工批准",
+                                               "测试账号完成沙盒验证",
+                                               "撤销授权与审计链路通过"
+                                           ],
+                      "rollback_plan":  "撤销渠道授权、关闭功能开关并恢复人工素材包流程。",
+                      "evidence":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-006",
+                      "title":  "建立第三阶段受控自动化",
+                      "objective":  "建立 worktree 隔离、变更路径门、固定验证配置、集成测试并更新 ai-4 自动化。",
+                      "priority":  "P0",
+                      "status":  "done",
+                      "risk_level":  "controlled_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "typecheck",
+                      "depends_on":  [
+                                         "AI-PD-001"
+                                     ],
+                      "allowed_paths":  [
+                                            "AGENTS.md",
+                                            "README.md",
+                                            "STATUS.md",
+                                            "TASK_QUEUE.json",
+                                            "docs/",
+                                            "scripts/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "队列与 PowerShell 解析通过",
+                                               "隔离集成测试通过",
+                                               "npm run typecheck",
+                                               "ai-4 为 worktree 且禁止部署"
+                                           ],
+                      "rollback_plan":  "恢复阶段 2 队列策略和 ai-4 的 local 只读提示词，移除阶段 3 脚本。",
+                      "evidence":  [
+                                       "2026-07-29: user explicitly approved Stage 3 controlled automation.",
+                                       "2026-07-29: PowerShell parse, queue validation, git diff check, and npm run typecheck passed.",
+                                       "2026-07-29: isolated integration passed allowed-path, fixed-profile, out-of-scope rejection, and primary-worktree rejection checks.",
+                                       "2026-07-29: ai-4 updated in place to ACTIVE worktree execution with no local environment setup script and no deploy/push/PR authority."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-007",
+                      "title":  "增强登录与角色权限回归",
+                      "objective":  "补齐平台管理员、客户管理员、运营员工和只读观察员的登录、路由访问与写权限回归。",
+                      "priority":  "P1",
+                      "status":  "done",
+                      "risk_level":  "low_risk_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "auth_regression",
+                      "depends_on":  [
+                                         "AI-PD-003"
+                                     ],
+                      "allowed_paths":  [
+                                            "scripts/",
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "四类角色的允许/拒绝矩阵通过",
+                                               "不写入真实账号或外部系统",
+                                               "npm run typecheck"
+                                           ],
+                      "rollback_plan":  "移除新增回归脚本和说明，不改变现有认证实现。",
+                      "evidence":  [
+                                       "2026-08-01T13:04:45.4433330+08:00: Fixed verification profile passed."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-008",
+                      "title":  "固化新客户首次价值验收清单",
+                      "objective":  "把登录、建立计划、生成首条内容和人工批准的首次价值路径形成可执行产品验收清单。",
+                      "priority":  "P1",
+                      "status":  "done",
+                      "risk_level":  "low_risk_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "docs_only",
+                      "depends_on":  [
+                                         "AI-PD-007"
+                                     ],
+                      "allowed_paths":  [
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "步骤、成功信号、失败提示和人工边界完整",
+                                               "不包含真实客户资料"
+                                           ],
+                      "rollback_plan":  "删除本任务新增的产品验收文档。",
+                      "evidence":  [
+                                       "2026-08-02T03:05:24.4738294+08:00: docs_only passed; added FIRST_VALUE_ACCEPTANCE_CHECKLIST.md with steps, success signals, failure recovery, human boundaries, synthetic-data limits, and external actions 0."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-009",
+                      "title":  "改善工作台首次价值引导",
+                      "objective":  "根据验收清单，在现有工作台加入一个最小、可回滚的下一步引导和状态提示。",
+                      "priority":  "P1",
+                      "status":  "done",
+                      "risk_level":  "low_risk_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "typecheck",
+                      "depends_on":  [
+                                         "AI-PD-008"
+                                     ],
+                      "allowed_paths":  [
+                                            "app/workspace/",
+                                            "components/",
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "非技术用户能识别唯一下一步",
+                                               "不增加外部依赖",
+                                               "npm run typecheck"
+                                           ],
+                      "rollback_plan":  "回退本任务 UI 提示组件和文档。",
+                      "evidence":  [
+                                       "2026-08-02T22:05:04.1248424+08:00: First-value guide now shows one state-aware next action on the Today workspace; rejected drafts return to plan revision; typecheck and change-set gates passed."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-010",
+                      "title":  "补齐审核到视频任务幂等回归",
+                      "objective":  "验证重复审核和重复生成视频任务不会产生重复业务记录或越权写入。",
+                      "priority":  "P1",
+                      "status":  "done",
+                      "risk_level":  "low_risk_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "review_video_regression",
+                      "depends_on":  [
+                                         "AI-PD-009"
+                                     ],
+                      "allowed_paths":  [
+                                            "scripts/",
+                                            "lib/",
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "重复动作保持幂等",
+                                               "只读角色仍被拒绝",
+                                               "npm run typecheck"
+                                           ],
+                      "rollback_plan":  "移除新增回归脚本；如有最小幂等修复则回退对应提交。",
+                      "evidence":  [
+                                       "2026-08-03T02:10:29.4329319+08:00: Review-to-video regression passed: 15 checks, repeated approval same draft, repeated generation same video job, viewer writes blocked with 403, typecheck passed, external actions 0."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-011",
+                      "title":  "补齐发布包到 CRM 跟进回归",
+                      "objective":  "验证素材包、会话动作和 CRM 跟进记录之间的本地链路与重复动作边界。",
+                      "priority":  "P1",
+                      "status":  "done",
+                      "risk_level":  "low_risk_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "publish_crm_regression",
+                      "depends_on":  [
+                                         "AI-PD-010"
+                                     ],
+                      "allowed_paths":  [
+                                            "scripts/",
+                                            "lib/",
+                                            "docs/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "本地链路通过",
+                                               "重复动作结果明确",
+                                               "外部动作数为 0",
+                                               "npm run typecheck"
+                                           ],
+                      "rollback_plan":  "移除新增回归脚本和最小范围修复。",
+                      "evidence":  [
+                                       "2026-08-15T06:33:25.2993906+08:00: Publish/CRM regression passed: 18 checks, repeated asset-package creation same plan, repeated follow-up same record, distinct actions separate, viewer writes blocked with 403, typecheck passed, external actions 0."
+                                   ]
+                  },
+                  {
+                      "id":  "AI-PD-012",
+                      "title":  "建立第四阶段持续开发流水线",
+                      "objective":  "实现受控完成状态、最终交付差异门、连续依赖队列和自动提交推送到现有草稿 PR。",
+                      "priority":  "P0",
+                      "status":  "done",
+                      "risk_level":  "controlled_write",
+                      "auto_runnable":  false,
+                      "verification_profile":  "typecheck",
+                      "depends_on":  [
+                                         "AI-PD-006"
+                                     ],
+                      "allowed_paths":  [
+                                            "AGENTS.md",
+                                            "README.md",
+                                            "STATUS.md",
+                                            "TASK_QUEUE.json",
+                                            "docs/",
+                                            "scripts/"
+                                        ],
+                      "acceptance_tests":  [
+                                               "队列和脚本解析通过",
+                                               "隔离完成/交付集成测试通过",
+                                               "npm run typecheck",
+                                               "ai-4 为 worktree 每 4 小时且禁止合并部署"
+                                           ],
+                      "rollback_plan":  "暂停 ai-4，恢复阶段 3 策略和提示词，移除阶段 4 完成/交付脚本。",
+                      "evidence":  [
+                                       "2026-07-29: user explicitly requested direct AI-team continuous development.",
+                                       "2026-07-29: isolated integration passed controlled ready-to-done and final delivery-set checks.",
+                                       "2026-07-29: ai-4 updated in place to ACTIVE worktree execution every 4 hours with ordinary push to existing draft PR #2 and no force/merge/deploy authority."
+                                   ]
+                  }
+              ]
+}

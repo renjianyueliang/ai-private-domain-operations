@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { dbQuery, isPostgresConfigured } from "./database";
+import { getLocalDataRoot } from "./local-data-path";
 
 export type ModelGatewayResult =
   | {
@@ -106,7 +107,7 @@ async function recordUsage(event: UsageEvent) {
     return;
   }
 
-  const localPath = path.join(process.cwd(), ".local-data", "model-usage.json");
+  const localPath = path.join(getLocalDataRoot(), "model-usage.json");
   await mkdir(path.dirname(localPath), { recursive: true });
 
   let events: UsageEvent[] = [];

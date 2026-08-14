@@ -215,6 +215,42 @@ docs/IMPLEMENTATION_STATUS_2026-07-26.md
 
 欢迎通过 GitHub Issues 提交真实使用场景、缺陷和小范围改进建议。我们尤其希望获得“从内容草稿到人工确认再到 CRM 跟进”闭环的可复现实测反馈。
 
+## 安全 AI 团队开发
+
+项目已加入阶段 1–3 的 AI 团队控制层，用仓库内的事实源替代反复粘贴长对话：
+
+- [产品规格](docs/PRODUCT_SPEC.md) 与 [业务闭环](docs/BUSINESS_LOOP_MAP.md)
+- [AI 团队运行方式](docs/AI_TEAM_OPERATING_MODEL.md) 与 [批准策略](docs/APPROVAL_GATE_POLICY.md)
+- `STATUS.md` 当前状态和 `TASK_QUEUE.json` 机器可读任务入口
+- `AGENTS.md` 规定所有 AI 开发任务的读取顺序、单任务上限和停止条件
+
+只读校验与选择（不会修改文件或执行任务）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Invoke-AITeamController.ps1 -Mode validate
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Invoke-AITeamController.ps1 -Mode summary
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Invoke-AITeamController.ps1 -Mode next
+```
+
+默认 smoke 只验证登录、受保护页面、API 读取和只读权限拦截；完整模式会生成带 `e2e-` 标记的本地测试记录，因此必须显式允许：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ClientWorkflow.ps1 -Mode smoke
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ClientWorkflow.ps1 -Mode full -AllowLocalWrites
+```
+
+第三阶段已启用受控的定时低风险自动化：现有 `ai-4` 每日任务在 Codex 管理的 linked worktree 中运行，最多选择一个 `read_only` 或 `low_risk_write` 任务。自动修改必须通过允许路径检查和固定验证配置，最终只留下待人工审查的 worktree 差异；不会自动提交、推送、创建 PR、合并或部署。
+
+阶段 3 本地安全验证：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-AITeamExecutionLoop.ps1
+```
+
+详细边界见 [第三阶段受控自动化规格](docs/STAGE_3_CONTROLLED_AUTOMATION.md)。
+
+第四阶段已把它升级为连续开发：验证成功后，受控脚本记录任务完成状态，自动提交并普通推送到现有开发分支，草稿 PR #2 会持续累积结果。远端竞争、验证失败或越界都会停止；不会 force push、自动合并或部署。详细范围见 [第四阶段持续开发规格](docs/STAGE_4_CONTINUOUS_DEVELOPMENT.md)。
+
 ## 开源许可证
 
 本项目采用 [GNU Affero General Public License v3.0](LICENSE)。如果你修改本项目并通过网络向用户提供服务，需要按该许可证向这些用户提供对应源代码。

@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-09T14:27:35+08:00",
+  "purpose": "团队治理与引导任务记录；业务任务仍以仓库根 TASK_QUEUE.json 为唯一执行入口。",
+  "policy": {
+    "max_tasks_per_cycle": 1,
+    "business_task_source": "TASK_QUEUE.json",
+    "auto_execute_governance_tasks": false,
+    "deployment_enabled": false,
+    "external_actions_enabled": false
+  },
+  "tasks": [
+    {
+      "id": "PD-DEV-OPC-001",
+      "title": "建立 Codex 持续开发正式 OPC 团队包",
+      "status": "done",
+      "risk_level": "controlled_write",
+      "auto_runnable": false,
+      "human_approval": "用户于 2026-08-09 明确要求先把 Codex 持续开发团队变成正式 OPC 团队。",
+      "allowed_paths": [
+        ".codex/agents/",
+        "agents/opc-dev-team/",
+        "automations/opc/Invoke-PrivateDomainDevOpc.ps1",
+        "scripts/Test-PrivateDomainDevOpc.ps1"
+      ],
+      "acceptance": [
+        "六个角色配置完整且职责互斥",
+        "OPC validate/status/team/next 均可运行",
+        "next 委托原控制器且单次最多返回一个任务",
+        "原任务队列、审批策略与控制器哈希不变",
+        "真实客户、运营账号、渠道、CRM、支付和部署权限均为 false"
+      ],
+      "rollback_plan": "回退本任务候选提交；不会影响原 TASK_QUEUE.json、业务代码或生产资源。"
+    },
+    {
+      "id": "PD-DEV-OPC-002",
+      "title": "把正式 OPC 团队迭代到证据驱动 V2",
+      "status": "done",
+      "risk_level": "controlled_write",
+      "auto_runnable": false,
+      "human_approval": "用户于 2026-08-09 要求把当前正式 OPC 团队继续迭代到优秀团队能力模型。",
+      "allowed_paths": [
+        "agents/opc-dev-team/",
+        "automations/opc/Invoke-PrivateDomainDevOpc.ps1",
+        "scripts/Test-PrivateDomainDevOpc.ps1",
+        "scripts/Test-PrivateDomainDevEnvironment.ps1"
+      ],
+      "acceptance": [
+        "正式 intake 可校验、去重、分级但不能自动晋升业务队列",
+        "固定质量门和证据契约可机器校验",
+        "环境不就绪时阻止低风险写任务进入 selected",
+        "metrics 输出队列、intake、成熟度和硬边界指标",
+        "角色交接契约与停止条件完整",
+        "原业务队列、批准策略、控制器和业务代码不变"
+      ],
+      "rollback_plan": "回退 V2 候选提交，保留 V1 提交 4217f45；不会影响原业务队列或生产资源。"
+    }
+  ]
+}

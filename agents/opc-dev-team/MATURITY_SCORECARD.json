@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-09T14:27:35+08:00",
+  "target_level": "excellent_controlled_team",
+  "capabilities": [
+    { "id": "product_judgment", "status": "implemented", "evidence": "product-lead role and acceptance-first task contract" },
+    { "id": "persistent_memory", "status": "implemented", "evidence": "PROJECT_MEMORY and ordered fact sources" },
+    { "id": "formal_intake", "status": "implemented", "evidence": "INTAKE_QUEUE with dedupe and no automatic promotion" },
+    { "id": "specialist_handoffs", "status": "implemented", "evidence": "six roles and HANDOFF_CONTRACT" },
+    { "id": "controlled_engineering", "status": "implemented", "evidence": "linked worktree, codex branch and allowed-path gates" },
+    { "id": "layered_quality", "status": "implemented", "evidence": "QUALITY_GATES and fixed OPC/environment regression" },
+    { "id": "security_by_default", "status": "implemented", "evidence": "hard boundaries and security-compliance risk gate" },
+    { "id": "auditable_delivery", "status": "implemented", "evidence": "EVIDENCE_CONTRACT, candidate commit and rollback requirements" },
+    { "id": "observable_metrics", "status": "implemented", "evidence": "controller metrics mode" },
+    { "id": "bounded_learning", "status": "implemented", "evidence": "intake proposals cannot self-promote or change policy" }
+  ]
+}

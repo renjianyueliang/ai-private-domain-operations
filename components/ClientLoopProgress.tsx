@@ -17,7 +17,7 @@ type LoopStepKey = "plan" | "review" | "video" | "publish" | "inbox" | "crm";
 
 type ClientLoopProgressProps = {
   tenantId: string;
-  current: LoopStepKey;
+  current?: LoopStepKey;
 };
 
 type ContentDraftView = {
@@ -43,6 +43,7 @@ type LoopSnapshot = {
   draftCount: number;
   waitingDraftCount: number;
   approvedDraftCount: number;
+  rejectedDraftCount: number;
   queuedDraftCount: number;
   videoCount: number;
   publishCount: number;
@@ -55,6 +56,7 @@ const emptySnapshot: LoopSnapshot = {
   draftCount: 0,
   waitingDraftCount: 0,
   approvedDraftCount: 0,
+  rejectedDraftCount: 0,
   queuedDraftCount: 0,
   videoCount: 0,
   publishCount: 0,
@@ -155,6 +157,13 @@ function getNextAction(snapshot: LoopSnapshot) {
         : "获客计划已生成，下一步检查内容草稿。",
     };
   }
+  if (snapshot.approvedDraftCount === 0 && snapshot.queuedDraftCount === 0) {
+    return {
+      label: "调整并重新生成",
+      href: "/workspace/plan",
+      copy: "首次人工判断已完成，当前草稿已驳回；调整目标或内容后再生成一版。",
+    };
+  }
   if (snapshot.videoCount === 0) {
     return {
       label: "生成视频任务",
@@ -181,6 +190,15 @@ function getNextAction(snapshot: LoopSnapshot) {
     href: "/workspace/crm",
     copy: "会话动作已记录，确认线索下一步和负责人。",
   };
+}
+
+function getFirstValueStatus(snapshot: LoopSnapshot) {
+  if (snapshot.planCount === 0) return "第 1 步 / 共 3 步";
+  if (snapshot.draftCount === 0) return "第 2 步 / 共 3 步";
+  if (snapshot.waitingDraftCount > 0) return "第 3 步 / 共 3 步";
+  if (snapshot.approvedDraftCount > 0 || snapshot.queuedDraftCount > 0) return "已完成人工审核";
+  if (snapshot.rejectedDraftCount > 0) return "已完成人工驳回";
+  return "状态待确认";
 }
 
 async function fetchJson<T>(url: string): Promise<T | null> {
@@ -217,6 +235,7 @@ export function ClientLoopProgress({ tenantId, current }: ClientLoopProgressProp
           draftCount: drafts.length,
           waitingDraftCount: drafts.filter((draft) => draft.status === "needs_review").length,
           approvedDraftCount: drafts.filter((draft) => draft.status === "approved").length,
+          rejectedDraftCount: drafts.filter((draft) => draft.status === "rejected").length,
           queuedDraftCount: drafts.filter((draft) => draft.status === "video_queued").length,
           videoCount: Array.isArray(videosData?.videoJobs) ? videosData.videoJobs.length : 0,
           publishCount: Array.isArray(publishData?.publishPlans) ? publishData.publishPlans.length : 0,
@@ -242,13 +261,14 @@ export function ClientLoopProgress({ tenantId, current }: ClientLoopProgressProp
   }, [tenantId]);
 
   const nextAction = useMemo(() => getNextAction(snapshot), [snapshot]);
+  const firstValueStatus = useMemo(() => getFirstValueStatus(snapshot), [snapshot]);
 
   return (
     <article className="client-loop-progress" aria-label="客户获客到成交闭环进度">
       <div className="client-loop-heading">
         <div>
-          <div className="section-kicker">客户可操作闭环 <span>新增</span></div>
-          <h2>从获客计划到 CRM 跟进，一步一步推进</h2>
+          <div className="section-kicker">首次价值引导 <span>{firstValueStatus}</span></div>
+          <h2>先完成计划、草稿和人工审核，再进入后续闭环</h2>
           <p>{nextAction.copy}</p>
         </div>
         <a className="primary-button" href={withTenant(nextAction.href, tenantId)}>

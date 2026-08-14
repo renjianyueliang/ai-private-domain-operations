@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { canWriteTenantData, type DemoUser } from "./auth";
+import { getLocalDataRoot } from "./local-data-path";
 import { readSnapshot, updateJob, type QueueJob, type StoredUpload } from "./local-store";
 import { findTenantById } from "./saas";
 
@@ -18,7 +19,7 @@ const videoVariants = [
 ];
 
 function localDataRoot() {
-  return path.join(process.cwd(), ".local-data");
+  return getLocalDataRoot();
 }
 
 function resolveUploadPath(upload: StoredUpload) {

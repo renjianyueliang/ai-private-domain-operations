@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { canAccessTenant, canWriteTenantData, DemoUser } from "./auth";
 import { dbQuery, getStorageMode, isPostgresConfigured } from "./database";
+import { getLocalDataRoot } from "./local-data-path";
 import { saveObject } from "./object-storage";
 import { enqueueWorkerJob } from "./queue-driver";
 import { findTenantById } from "./saas";
@@ -103,7 +104,7 @@ function cloneEmptySnapshot(): LocalSnapshot {
 }
 
 function localDataRoot() {
-  return path.join(process.cwd(), ".local-data");
+  return getLocalDataRoot();
 }
 
 function recordsPath() {
